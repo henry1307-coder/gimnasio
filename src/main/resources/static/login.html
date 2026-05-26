@@ -418,11 +418,20 @@
     btn.textContent = 'VERIFICANDO...';
 
     try {
-      const res = await fetch('https://railway.app', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
+  
+  const res = await fetch('https://railway.app', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  }); 
+
+  const data = await res.json();
+ 
+
+} catch (error) {
+  console.error("Error de conexión:", error);
+}
+
 
       if (res.ok) {
         const data = await res.json();
@@ -435,14 +444,27 @@
         const msg = await res.text();
         showAlert('loginError', msg || 'Credenciales incorrectas.');
       }
-    } catch (e) {
+    } try {
+  btn.disabled = true;
+  btn.textContent = 'CARGANDO...';
+
+  const res = await fetch('https://railway.app', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+  // Aquí va tu lógica si el login es correcto...
+
+} catch (e) {
   console.error("Error de conexión:", e);
   showAlert('loginError', '❌ No se pudo conectar con el servidor Java. ¿Está encendido?');
-  }finally {
-      btn.disabled = false;
-      btn.textContent = 'ENTRAR';
-    }
-  }
+} finally {
+  btn.disabled = false;
+  btn.textContent = 'ENTRAR';
+}
+
 
   // Demo sin backend
   function loginDemo(email, password) {
