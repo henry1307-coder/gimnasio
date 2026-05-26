@@ -374,7 +374,9 @@
 </div>
 
 <script>
-  const API = "https://railway.app";
+  // 🟢 IMPORTANTE: Cambia "https://railway.app" por la URL real de tu backend Java
+  // Ejemplo: "https://gimnasio-production-83b1.up.railway.app"
+  const API = "https://TU-BACKEND-JAVA-REAL.up.railway.app";
 
   // ── TABS ─────────────────────────────────────
   function switchTab(tab) {
@@ -418,20 +420,12 @@
     btn.textContent = 'VERIFICANDO...';
 
     try {
-  
-  const res = await fetch('https://railway.app', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  }); 
-
-  const data = await res.json();
- 
-
-} catch (error) {
-  console.error("Error de conexión:", error);
-}
-
+      // Usamos la variable API apuntando a la ruta de login
+      const res = await fetch(`${API}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      }); 
 
       if (res.ok) {
         const data = await res.json();
@@ -444,27 +438,17 @@
         const msg = await res.text();
         showAlert('loginError', msg || 'Credenciales incorrectas.');
       }
-    } try {
-  btn.disabled = true;
-  btn.textContent = 'CARGANDO...';
 
-  const res = await fetch('https://railway.app', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
-
-  const data = await res.json();
-  // Aquí va tu lógica si el login es correcto...
-
-} catch (e) {
-  console.error("Error de conexión:", e);
-  showAlert('loginError', '❌ No se pudo conectar con el servidor Java. ¿Está encendido?');
-} finally {
-  btn.disabled = false;
-  btn.textContent = 'ENTRAR';
-}
-
+    } catch (error) {
+      console.error("Error de conexión:", error);
+      
+      // MODO DEMO: Si falla el servidor Java, intenta validar localmente
+      loginDemo(email, password);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'ENTRAR';
+    }
+  } // <-- Cierre correcto de la función iniciarSesion
 
   // Demo sin backend
   function loginDemo(email, password) {
@@ -479,7 +463,7 @@
       showAlert('loginSuccess', `Bienvenido, ${u.nombre} (modo demo)`, 'success');
       setTimeout(() => redirigirPorRol(u.rol), 1200);
     } else {
-      showAlert('loginError', 'Credenciales incorrectas. Usa los usuarios de prueba.');
+      showAlert('loginError', '❌ No se pudo conectar con el servidor Java. ¿Está encendido?');
     }
   }
 
@@ -490,7 +474,7 @@
       CLIENTE:    '/dashboard-cliente.html',
     };
     window.location.href = rutas[rol] || '/dashboard-admin.html';
-}
+  }
 
   // ── REGISTRO ──────────────────────────────────
   async function registrar() {
@@ -545,5 +529,6 @@
     } catch(e) { localStorage.removeItem('usuario'); }
   }
 </script>
+
 </body>
 </html>
