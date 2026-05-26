@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GymSystem — Mi Asistencia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gold:#f7b731;--dark:#0f0f1a;--dark2:#1a1a2e;--dark3:#22223b;--light:#f5f5f0;--muted:#8888a0;--border:rgba(255,255,255,0.07);--green:#10b981}
+    body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--light);min-height:100vh;display:flex}
+    .sidebar{width:230px;background:var(--dark2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 1rem;position:fixed;top:0;left:0;height:100vh;z-index:50}
+    .sidebar-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;padding:0 8px;margin-bottom:.4rem}
+    .sidebar-logo span{color:var(--gold)}
+    .sidebar-role{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:0 8px;margin-bottom:2rem}
+    .nav-section{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:0 8px;margin:1rem 0 .5rem}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--muted);font-size:14px;cursor:pointer;text-decoration:none;transition:all .2s;margin-bottom:2px}
+    .nav-item:hover{background:rgba(255,255,255,.05);color:var(--light)}
+    .nav-item.active{background:var(--gold);color:var(--dark);font-weight:600}
+    .nav-icon{font-size:16px;width:20px;text-align:center}
+    .sidebar-bottom{margin-top:auto;border-top:1px solid var(--border);padding-top:1rem}
+    .user-card{display:flex;align-items:center;gap:10px;padding:8px 12px}
+    .user-avatar-c{width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+    .user-name{font-size:13px;font-weight:600}
+    .user-email{font-size:11px;color:var(--muted)}
+    .btn-logout{width:100%;margin-top:8px;padding:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;color:#fca5a5;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif}
+    .btn-logout:hover{background:rgba(239,68,68,.2)}
+    .main{margin-left:230px;flex:1;display:flex;flex-direction:column}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;border-bottom:1px solid var(--border);background:var(--dark);position:sticky;top:0;z-index:40}
+    .topbar-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px}
+    .topbar-sub{font-size:13px;color:var(--muted);margin-top:2px}
+    .badge-cliente{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600}
+    .content{padding:2rem;flex:1}
+
+    /* STATS */
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1.5rem}
+    .stat-card{background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;transition:border-color .2s}
+    .stat-card:hover{border-color:rgba(247,183,49,.3)}
+    .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+    .stat-value{font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1}
+    .stat-pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:5px}
+    .pill-gold{background:rgba(247,183,49,.15);color:var(--gold)}
+    .pill-green{background:rgba(16,185,129,.15);color:#34d399}
+    .pill-blue{background:rgba(59,130,246,.15);color:#93c5fd}
+    .pill-gray{background:rgba(255,255,255,.07);color:var(--muted)}
+
+    /* CALENDARIO SEMANA */
+    .semana-wrap{background:var(--dark2);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem}
+    .semana-titulo{font-size:13px;font-weight:600;margin-bottom:1rem}
+    .semana-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+    .dia-col{display:flex;flex-direction:column;align-items:center;gap:6px}
+    .dia-nombre{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+    .dia-circulo{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:18px;border:2px solid var(--border);transition:all .2s}
+    .dia-circulo.vino{background:var(--gold);color:var(--dark);border-color:var(--gold)}
+    .dia-circulo.hoy{border-color:rgba(16,185,129,.6);color:#34d399}
+    .dia-circulo.hoy.vino{background:var(--green);border-color:var(--green);color:#fff}
+    .dia-visitas{font-size:10px;color:var(--muted)}
+    .dia-visitas.tiene{color:var(--gold)}
+
+    /* GRÁFICA MENSUAL */
+    .grafica-wrap{background:var(--dark2);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem}
+    .grafica-titulo{font-size:13px;font-weight:600;margin-bottom:1rem}
+    .col-chart{display:flex;align-items:flex-end;gap:6px;height:100px}
+    .col-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+    .col-bar{width:100%;border-radius:4px 4px 0 0;background:rgba(247,183,49,.2);transition:height .5s ease;cursor:default;min-height:4px}
+    .col-bar.tiene{background:rgba(247,183,49,.7)}
+    .col-bar:hover{background:var(--gold)}
+    .col-label{font-size:9px;color:var(--muted);text-align:center}
+    .col-val{font-size:10px;color:var(--gold);font-weight:600;min-height:14px}
+
+    /* TABS */
+    .tabs-bar{display:flex;gap:4px;margin-bottom:1.25rem;background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:5px;width:fit-content}
+    .tab-btn{padding:8px 18px;border-radius:7px;border:none;background:none;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+    .tab-btn.active{background:var(--gold);color:var(--dark);font-weight:700}
+
+    /* HISTORIAL */
+    .hist-list{display:flex;flex-direction:column;gap:10px}
+    .hist-item{background:var(--dark2);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:16px;transition:border-color .2s}
+    .hist-item:hover{border-color:rgba(247,183,49,.25)}
+    .hist-fecha-box{background:rgba(247,183,49,.1);border-radius:10px;padding:8px 12px;text-align:center;flex-shrink:0;min-width:52px}
+    .hist-dia{font-family:'Bebas Neue',sans-serif;font-size:26px;line-height:1;color:var(--gold)}
+    .hist-mes{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+    .hist-info{flex:1}
+    .hist-horas{font-size:14px;font-weight:500}
+    .hist-dur{font-size:12px;color:var(--muted);margin-top:2px}
+    .hist-estado{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;flex-shrink:0}
+    .hist-dot{width:5px;height:5px;border-radius:50%}
+    .est-completa{background:rgba(16,185,129,.12);color:#34d399}
+    .est-completa .hist-dot{background:var(--green)}
+    .est-en-curso{background:rgba(247,183,49,.12);color:var(--gold)}
+    .est-en-curso .hist-dot{background:var(--gold)}
+    .empty-msg{text-align:center;padding:3rem;color:var(--muted);font-size:13px}
+    .pag-btns{display:flex;gap:6px;margin-top:1rem;justify-content:center}
+    .pag-btn{width:30px;height:30px;border:1px solid var(--border);border-radius:6px;background:none;cursor:pointer;font-size:13px;color:var(--light);display:flex;align-items:center;justify-content:center}
+    .pag-btn.active{background:var(--gold);color:var(--dark);border-color:var(--gold);font-weight:700}
+
+    .section-title{font-size:12px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem;margin-top:1.5rem}
+    .section-title:first-of-type{margin-top:0}
+    .toast{position:fixed;bottom:24px;right:24px;z-index:200;background:var(--dark2);border:1px solid var(--border);color:var(--light);padding:12px 20px;border-radius:10px;font-size:14px;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+    .toast.show{opacity:1;transform:translateY(0)}
+    @media(max-width:900px){.sidebar{display:none}.main{margin-left:0}.semana-grid{grid-template-columns:repeat(4,1fr)}}
+  </style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-logo">GYM<span>SYSTEM</span></div>
+  <div class="sidebar-role">Panel Cliente</div>
+  <div class="nav-section">Mi cuenta</div>
+  <a class="nav-item" href="/dashboard-cliente.html"><span class="nav-icon">🏠</span> Mi Panel</a>
+  <a class="nav-item" href="/mi-membresia.html"><span class="nav-icon">💳</span> Mi Membresía</a>
+  <a class="nav-item" href="/mi-rutina.html"><span class="nav-icon">🏋️</span> Mi Rutina</a>
+  <a class="nav-item active" href="/mi-asistencia.html"><span class="nav-icon">📋</span> Mi Asistencia</a>
+  <a class="nav-item" href="/mis-pagos.html"><span class="nav-icon">💰</span> Mis Pagos</a>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="user-avatar-c" id="sidebarAvatar">C</div>
+      <div><div class="user-name" id="sidebarNombre">Cliente</div><div class="user-email" id="sidebarEmail"></div></div>
+    </div>
+    <button class="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div><div class="topbar-title">Mi Asistencia</div><div class="topbar-sub">Historial de visitas al gimnasio</div></div>
+    <span class="badge-cliente">CLIENTE</span>
+  </div>
+  <div class="content">
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total visitas</div><div class="stat-value" id="stTotal">0</div><span class="stat-pill pill-gold">historial</span></div>
+      <div class="stat-card"><div class="stat-label">Este mes</div><div class="stat-value" id="stMes">0</div><span class="stat-pill pill-green">mes actual</span></div>
+      <div class="stat-card"><div class="stat-label">Esta semana</div><div class="stat-value" id="stSemana">0</div><span class="stat-pill pill-blue">semana</span></div>
+      <div class="stat-card"><div class="stat-label">Promedio semanal</div><div class="stat-value" id="stPromedio">0</div><span class="stat-pill pill-gray">visitas/sem</span></div>
+      <div class="stat-card"><div class="stat-label">Racha actual</div><div class="stat-value" id="stRacha">0</div><span class="stat-pill pill-gold">días seguidos</span></div>
+    </div>
+
+    <!-- SEMANA ACTUAL -->
+    <div class="semana-wrap">
+      <div class="semana-titulo">📅 Semana actual</div>
+      <div class="semana-grid" id="semanaGrid"></div>
+    </div>
+
+    <!-- GRÁFICA MENSUAL -->
+    <div class="grafica-wrap">
+      <div class="grafica-titulo">📊 Visitas por semana este mes</div>
+      <div class="col-chart" id="graficaMensual"></div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="section-title">Historial de visitas</div>
+    <div class="tabs-bar">
+      <button class="tab-btn active" onclick="switchTab('semana')">Esta semana</button>
+      <button class="tab-btn" onclick="switchTab('mes')">Este mes</button>
+      <button class="tab-btn" onclick="switchTab('todos')">Todas</button>
+    </div>
+
+    <div class="hist-list" id="histList"></div>
+    <div class="pag-btns" id="pagBtns"></div>
+
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const API='http://localhost:8080/api';
+let sesion={};
+try{
+  sesion=JSON.parse(localStorage.getItem('usuario')||'{}');
+  if(!sesion?.rol)window.location.href='/login.html';
+  if(sesion.rol!=='CLIENTE')window.location.href='/login.html';
+}catch{window.location.href='/login.html';}
+document.getElementById('sidebarNombre').textContent=`${sesion.nombre||''} ${sesion.apellido||''}`;
+document.getElementById('sidebarEmail').textContent=sesion.email||'';
+document.getElementById('sidebarAvatar').textContent=((sesion.nombre||'C')[0]+(sesion.apellido||'')[0]).toUpperCase();
+function cerrarSesion(){localStorage.removeItem('usuario');window.location.href='/login.html';}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+
+const hoyDate=new Date();
+let asistencias=[],tabActual='semana',pagActual=1;
+const porPagina=8;
+
+function fmtHora(d){if(!d)return'—';return new Date(d).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});}
+function fmtFechaLarga(d){if(!d)return'—';return new Date(d).toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});}
+function esHoy(d){if(!d)return false;return new Date(d).toDateString()===hoyDate.toDateString();}
+function esSemana(d){if(!d)return false;const h=new Date();h.setDate(h.getDate()-7);return new Date(d)>=h;}
+function esMes(d){if(!d)return false;const f=new Date(d);return f.getMonth()===hoyDate.getMonth()&&f.getFullYear()===hoyDate.getFullYear();}
+function calcDur(e,s){if(!e||!s)return'En curso';const m=Math.round((new Date(s)-new Date(e))/(1000*60));return m<60?`${m} min`:`${Math.floor(m/60)}h ${m%60}min`;}
+
+async function cargarTodo(){
+  const cId = sesion.clienteId;
+  if (!cId) {
+    alert('No se encontró tu registro de cliente. Contacta al administrador.');
+    return;
+  }
+  try{
+    const res=await fetch(`${API}/asistencia`);
+    const todos=res.ok?await res.json():demoAsistencias();
+    asistencias=todos.filter(a=>a.clienteId===cId).sort((a,b)=>new Date(b.fechaEntrada)-new Date(a.fechaEntrada));
+    if(!asistencias.length)asistencias=demoAsistencias();
+  }catch{asistencias=demoAsistencias();}
+  actualizarStats();
+  renderSemana();
+  renderGrafica();
+  renderHistorial();
+}
+
+function actualizarStats(){
+  const mes=asistencias.filter(a=>esMes(a.fechaEntrada)).length;
+  const sem=asistencias.filter(a=>esSemana(a.fechaEntrada)).length;
+  // Promedio semanal (últimas 4 semanas)
+  const hace4sem=new Date();hace4sem.setDate(hace4sem.getDate()-28);
+  const ultimas4=asistencias.filter(a=>new Date(a.fechaEntrada)>=hace4sem).length;
+  const promedio=Math.round(ultimas4/4);
+  // Racha
+  let racha=0;
+  const fecha=new Date(hoyDate);
+  while(true){
+    const f=fecha.toDateString();
+    const vino=asistencias.some(a=>new Date(a.fechaEntrada).toDateString()===f);
+    if(!vino)break;
+    racha++;
+    fecha.setDate(fecha.getDate()-1);
+  }
+  document.getElementById('stTotal').textContent=asistencias.length;
+  document.getElementById('stMes').textContent=mes;
+  document.getElementById('stSemana').textContent=sem;
+  document.getElementById('stPromedio').textContent=promedio;
+  document.getElementById('stRacha').textContent=racha;
+}
+
+function renderSemana(){
+  const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const cols=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const count=asistencias.filter(a=>new Date(a.fechaEntrada).toDateString()===d.toDateString()).length;
+    const esH=d.toDateString()===hoyDate.toDateString();
+    cols.push(`<div class="dia-col">
+      <div class="dia-nombre">${dias[d.getDay()]}</div>
+      <div class="dia-circulo${count>0?' vino':''}${esH?' hoy':''}">${d.getDate()}</div>
+      <div class="dia-visitas${count>0?' tiene':''}">${count>0?count+'v':'—'}</div>
+    </div>`);
+  }
+  document.getElementById('semanaGrid').innerHTML=cols.join('');
+}
+
+function renderGrafica(){
+  // Visitas por semana del mes actual
+  const semanas=[];
+  const primerDia=new Date(hoyDate.getFullYear(),hoyDate.getMonth(),1);
+  let inicio=new Date(primerDia);
+  let semNum=1;
+  while(inicio<=hoyDate){
+    const fin=new Date(inicio);fin.setDate(fin.getDate()+6);
+    const count=asistencias.filter(a=>{
+      const f=new Date(a.fechaEntrada);
+      return f>=inicio&&f<=fin&&esMes(a.fechaEntrada);
+    }).length;
+    semanas.push({label:`Sem ${semNum}`,count});
+    inicio.setDate(inicio.getDate()+7);
+    semNum++;
+  }
+  const max=Math.max(...semanas.map(s=>s.count),1);
+  document.getElementById('graficaMensual').innerHTML=semanas.map(s=>`
+    <div class="col-wrap">
+      <div class="col-val">${s.count>0?s.count:''}</div>
+      <div class="col-bar${s.count>0?' tiene':''}" style="height:${Math.max(4,Math.round((s.count/max)*85))}px"></div>
+      <div class="col-label">${s.label}</div>
+    </div>`).join('');
+}
+
+function switchTab(tab){
+  tabActual=tab;pagActual=1;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(tab==='semana'&&i===0)||(tab==='mes'&&i===1)||(tab==='todos'&&i===2)));
+  renderHistorial();
+}
+
+function filtrados(){
+  if(tabActual==='semana')return asistencias.filter(a=>esSemana(a.fechaEntrada));
+  if(tabActual==='mes')return asistencias.filter(a=>esMes(a.fechaEntrada));
+  return asistencias;
+}
+
+function renderHistorial(){
+  const data=filtrados();
+  const totalPags=Math.max(1,Math.ceil(data.length/porPagina));
+  if(pagActual>totalPags)pagActual=1;
+  const slice=data.slice((pagActual-1)*porPagina,pagActual*porPagina);
+  const cont=document.getElementById('histList');
+  if(!slice.length){
+    cont.innerHTML=`<div class="empty-msg">Sin registros${tabActual==='semana'?' esta semana':tabActual==='mes'?' este mes':''}</div>`;
+    document.getElementById('pagBtns').innerHTML='';return;
+  }
+  cont.innerHTML=slice.map(a=>{
+    const d=new Date(a.fechaEntrada);
+    const completa=!!a.fechaSalida;
+    return`<div class="hist-item">
+      <div class="hist-fecha-box">
+        <div class="hist-dia">${d.getDate()}</div>
+        <div class="hist-mes">${d.toLocaleDateString('es-CO',{month:'short'})}</div>
+      </div>
+      <div class="hist-info">
+        <div class="hist-horas">
+          ${fmtHora(a.fechaEntrada)}${a.fechaSalida?' → '+fmtHora(a.fechaSalida):''}
+        </div>
+        <div class="hist-dur">${fmtFechaLarga(a.fechaEntrada)} · ${calcDur(a.fechaEntrada,a.fechaSalida)}</div>
+      </div>
+      <span class="hist-estado ${completa?'est-completa':'est-en-curso'}">
+        <span class="hist-dot"></span>${completa?'Completada':'En curso'}
+      </span>
+    </div>`;
+  }).join('');
+  let btns='';for(let i=1;i<=totalPags;i++) btns+=`<button class="pag-btn${i===pagActual?' active':''}" onclick="irPag(${i})">${i}</button>`;
+  document.getElementById('pagBtns').innerHTML=btns;
+}
+function irPag(p){pagActual=p;renderHistorial();}
+
+
+cargarTodo();
+</script>
+</body>
+</html>

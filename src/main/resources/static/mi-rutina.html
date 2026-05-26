@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GymSystem — Mi Rutina</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gold:#f7b731;--dark:#0f0f1a;--dark2:#1a1a2e;--dark3:#22223b;--light:#f5f5f0;--muted:#8888a0;--border:rgba(255,255,255,0.07);--green:#10b981}
+    body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--light);min-height:100vh;display:flex}
+    .sidebar{width:230px;background:var(--dark2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 1rem;position:fixed;top:0;left:0;height:100vh;z-index:50}
+    .sidebar-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;padding:0 8px;margin-bottom:.4rem}
+    .sidebar-logo span{color:var(--gold)}
+    .sidebar-role{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:0 8px;margin-bottom:2rem}
+    .nav-section{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:0 8px;margin:1rem 0 .5rem}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--muted);font-size:14px;cursor:pointer;text-decoration:none;transition:all .2s;margin-bottom:2px}
+    .nav-item:hover{background:rgba(255,255,255,.05);color:var(--light)}
+    .nav-item.active{background:var(--gold);color:var(--dark);font-weight:600}
+    .nav-icon{font-size:16px;width:20px;text-align:center}
+    .sidebar-bottom{margin-top:auto;border-top:1px solid var(--border);padding-top:1rem}
+    .user-card{display:flex;align-items:center;gap:10px;padding:8px 12px}
+    .user-avatar-c{width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+    .user-name{font-size:13px;font-weight:600}
+    .user-email{font-size:11px;color:var(--muted)}
+    .btn-logout{width:100%;margin-top:8px;padding:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;color:#fca5a5;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif}
+    .btn-logout:hover{background:rgba(239,68,68,.2)}
+    .main{margin-left:230px;flex:1;display:flex;flex-direction:column}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;border-bottom:1px solid var(--border);background:var(--dark);position:sticky;top:0;z-index:40}
+    .topbar-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px}
+    .topbar-sub{font-size:13px;color:var(--muted);margin-top:2px}
+    .badge-cliente{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600}
+    .content{padding:2rem;flex:1}
+
+    /* HERO RUTINA */
+    .rutina-hero{background:linear-gradient(135deg,var(--dark2) 0%,rgba(247,183,49,.08) 100%);border:1px solid rgba(247,183,49,.2);border-radius:16px;padding:2rem;margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
+    .rutina-hero-info h2{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:6px}
+    .rutina-hero-info p{font-size:14px;color:var(--muted);line-height:1.6;max-width:500px}
+    .nivel-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;margin-bottom:10px}
+    .nivel-Principiante{background:rgba(16,185,129,.15);color:#34d399}
+    .nivel-Intermedio{background:rgba(247,183,49,.15);color:var(--gold)}
+    .nivel-Avanzado{background:rgba(239,68,68,.15);color:#fca5a5}
+    .rutina-hero-stats{display:flex;gap:20px;flex-wrap:wrap}
+    .hero-stat{text-align:center}
+    .hero-stat-val{font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1;color:var(--gold)}
+    .hero-stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+    .entrenador-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:20px;padding:6px 14px;font-size:13px;color:#93c5fd;margin-top:10px}
+
+    /* GRID EJERCICIOS */
+    .section-title{font-size:12px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem;margin-top:1.5rem}
+    .section-title:first-of-type{margin-top:0}
+    .ejercicios-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:1.5rem}
+    .ejercicio-card{background:var(--dark2);border:1px solid var(--border);border-radius:12px;padding:1.25rem;transition:all .2s;position:relative;overflow:hidden}
+    .ejercicio-card:hover{border-color:rgba(247,183,49,.35);transform:translateY(-2px)}
+    .ejercicio-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gold);border-radius:12px 12px 0 0}
+    .ej-num{font-family:'Bebas Neue',sans-serif;font-size:40px;color:rgba(247,183,49,.15);position:absolute;top:8px;right:14px;line-height:1}
+    .ej-nombre{font-size:16px;font-weight:600;margin-bottom:14px;padding-right:40px}
+    .ej-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    .ej-stat{background:rgba(255,255,255,.04);border-radius:8px;padding:8px;text-align:center}
+    .ej-stat-val{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;color:var(--gold)}
+    .ej-stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:3px}
+    .ej-notas{margin-top:10px;font-size:12px;color:var(--muted);background:rgba(255,255,255,.03);border-radius:6px;padding:8px;line-height:1.5}
+
+    /* CHECKLIST */
+    .checklist-card{background:var(--dark2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.5rem}
+    .checklist-header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .checklist-title{font-size:14px;font-weight:600}
+    .progreso-mini{font-size:13px;color:var(--gold);font-weight:600}
+    .checklist-body{padding:1rem 1.5rem}
+    .check-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:opacity .2s}
+    .check-item:last-child{border-bottom:none;padding-bottom:0}
+    .check-item.completado{opacity:.55}
+    .check-box{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+    .check-box.done{background:var(--gold);border-color:var(--gold);color:var(--dark);font-size:13px}
+    .check-label{font-size:14px;font-weight:500;flex:1}
+    .check-label.tachado{text-decoration:line-through;color:var(--muted)}
+    .check-series{font-size:12px;color:var(--muted)}
+    .barra-progreso{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin:1rem 1.5rem}
+    .barra-fill{height:100%;background:var(--gold);border-radius:3px;transition:width .4s ease}
+
+    /* SIN RUTINA */
+    .empty-state{text-align:center;padding:4rem 2rem}
+    .empty-state .icon{font-size:56px;margin-bottom:1rem}
+    .empty-state p{font-size:14px;color:var(--muted);max-width:360px;margin:0 auto}
+
+    .toast{position:fixed;bottom:24px;right:24px;z-index:200;background:var(--dark2);border:1px solid var(--border);color:var(--light);padding:12px 20px;border-radius:10px;font-size:14px;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+    .toast.show{opacity:1;transform:translateY(0)}
+    @media(max-width:900px){.sidebar{display:none}.main{margin-left:0}}
+  </style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-logo">GYM<span>SYSTEM</span></div>
+  <div class="sidebar-role">Panel Cliente</div>
+  <div class="nav-section">Mi cuenta</div>
+  <a class="nav-item" href="/dashboard-cliente.html"><span class="nav-icon">🏠</span> Mi Panel</a>
+  <a class="nav-item" href="/mi-membresia.html"><span class="nav-icon">💳</span> Mi Membresía</a>
+  <a class="nav-item active" href="/mi-rutina.html"><span class="nav-icon">🏋️</span> Mi Rutina</a>
+  <a class="nav-item" href="/mi-asistencia.html"><span class="nav-icon">📋</span> Mi Asistencia</a>
+  <a class="nav-item" href="/mis-pagos.html"><span class="nav-icon">💰</span> Mis Pagos</a>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="user-avatar-c" id="sidebarAvatar">C</div>
+      <div><div class="user-name" id="sidebarNombre">Cliente</div><div class="user-email" id="sidebarEmail"></div></div>
+    </div>
+    <button class="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div><div class="topbar-title">Mi Rutina</div><div class="topbar-sub">Plan de entrenamiento asignado</div></div>
+    <span class="badge-cliente">CLIENTE</span>
+  </div>
+  <div class="content" id="mainContent">
+    <div class="empty-state"><div class="icon">⏳</div><p>Cargando tu rutina...</p></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const API='http://localhost:8080/api';
+let sesion={};
+try{
+  sesion=JSON.parse(localStorage.getItem('usuario')||'{}');
+  if(!sesion?.rol)window.location.href='/login.html';
+  if(sesion.rol!=='CLIENTE')window.location.href='/login.html';
+}catch{window.location.href='/login.html';}
+document.getElementById('sidebarNombre').textContent=`${sesion.nombre||''} ${sesion.apellido||''}`;
+document.getElementById('sidebarEmail').textContent=sesion.email||'';
+document.getElementById('sidebarAvatar').textContent=((sesion.nombre||'C')[0]+(sesion.apellido||'')[0]).toUpperCase();
+function cerrarSesion(){localStorage.removeItem('usuario');window.location.href='/login.html';}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+
+let completados=new Set();
+
+async function cargarTodo(){
+  const cId=sesion.clienteId;
+  let rutinas=[],asignaciones=[];
+  try{
+    const[resR,resA]=await Promise.all([fetch(`${API}/rutinas`),fetch(`${API}/rutinas/asignaciones`)]);
+    rutinas=resR.ok?await resR.json():demoRutinas();
+    asignaciones=resA.ok?await resA.json():demoAsignaciones();
+  }catch{rutinas=demoRutinas();asignaciones=demoAsignaciones();}
+
+  const miAsig=asignaciones.find(a=>a.clienteId===cId);
+  const miRutina=miAsig?rutinas.find(r=>r.id===miAsig.rutinaId):null;
+  renderContenido(miRutina,miAsig);
+}
+
+function renderContenido(rutina,asig){
+  const cont=document.getElementById('mainContent');
+  if(!rutina){
+    cont.innerHTML=`<div class="empty-state">
+      <div class="icon">🏋️</div>
+      <p>Aún no tienes una rutina asignada. Habla con tu entrenador para que te cree un plan personalizado.</p>
+    </div>`;
+    return;
+  }
+
+  const ejs=rutina.ejercicios||[];
+  const total=ejs.length;
+
+  cont.innerHTML=`
+    <div class="rutina-hero">
+      <div class="rutina-hero-info">
+        <span class="nivel-badge nivel-${rutina.nivel}">${rutina.nivel}</span>
+        <h2>${rutina.nombre}</h2>
+        <p>${rutina.descripcion||'Plan de entrenamiento personalizado para ti.'}</p>
+        <div class="entrenador-tag">👨‍💼 ${rutina.entrenadorNombre||'Entrenador asignado'}</div>
+      </div>
+      <div class="rutina-hero-stats">
+        <div class="hero-stat"><div class="hero-stat-val">${total}</div><div class="hero-stat-label">Ejercicios</div></div>
+        <div class="hero-stat"><div class="hero-stat-val">${ejs.reduce((s,e)=>s+(e.series||0),0)}</div><div class="hero-stat-label">Series totales</div></div>
+        <div class="hero-stat"><div class="hero-stat-val" id="heroCompletados">0</div><div class="hero-stat-label">Completados</div></div>
+      </div>
+    </div>
+
+    <div class="section-title">Seguimiento de sesión de hoy</div>
+    <div class="checklist-card">
+      <div class="checklist-header">
+        <div class="checklist-title">✅ Marca los ejercicios que completaste</div>
+        <div class="progreso-mini" id="checkPct">0 / ${total}</div>
+      </div>
+      <div class="barra-progreso"><div class="barra-fill" id="barraFill" style="width:0%"></div></div>
+      <div class="checklist-body" id="checklistBody"></div>
+    </div>
+
+    <div class="section-title">Detalle de ejercicios</div>
+    <div class="ejercicios-grid" id="ejsGrid"></div>
+  `;
+
+  // Checklist
+  document.getElementById('checklistBody').innerHTML=ejs.map((e,i)=>`
+    <div class="check-item" id="check-${i}" onclick="toggleCheck(${i},'${e.nombre}')">
+      <div class="check-box" id="box-${i}"></div>
+      <div class="check-label" id="lbl-${i}">${e.nombre}</div>
+      <div class="check-series">${e.series}×${e.repeticiones} · ${e.descansoSeg}s</div>
+    </div>`).join('');
+
+  // Cards ejercicios
+  document.getElementById('ejsGrid').innerHTML=ejs.map((e,i)=>`
+    <div class="ejercicio-card">
+      <div class="ej-num">${String(i+1).padStart(2,'0')}</div>
+      <div class="ej-nombre">${e.nombre}</div>
+      <div class="ej-stats">
+        <div class="ej-stat"><div class="ej-stat-val">${e.series||3}</div><div class="ej-stat-label">Series</div></div>
+        <div class="ej-stat"><div class="ej-stat-val">${e.repeticiones||12}</div><div class="ej-stat-label">Reps</div></div>
+        <div class="ej-stat"><div class="ej-stat-val">${e.descansoSeg||60}s</div><div class="ej-stat-label">Descanso</div></div>
+      </div>
+      ${e.notas?`<div class="ej-notas">💡 ${e.notas}</div>`:''}
+    </div>`).join('');
+
+  actualizarChecklist(total);
+}
+
+function toggleCheck(i,nombre){
+  if(completados.has(i))completados.delete(i);else completados.add(i);
+  const box=document.getElementById(`box-${i}`);
+  const lbl=document.getElementById(`lbl-${i}`);
+  const item=document.getElementById(`check-${i}`);
+  const done=completados.has(i);
+  box.classList.toggle('done',done);
+  box.textContent=done?'✓':'';
+  lbl.classList.toggle('tachado',done);
+  item.classList.toggle('completado',done);
+  const total=document.querySelectorAll('.check-item').length;
+  actualizarChecklist(total);
+  if(done)toast(`💪 ¡${nombre} completado!`);
+}
+
+function actualizarChecklist(total){
+  const n=completados.size;
+  const pct=total>0?Math.round((n/total)*100):0;
+  const el=document.getElementById('checkPct');
+  const barra=document.getElementById('barraFill');
+  const hero=document.getElementById('heroCompletados');
+  if(el)el.textContent=`${n} / ${total}`;
+  if(barra)barra.style.width=`${pct}%`;
+  if(hero)hero.textContent=n;
+  if(n===total&&total>0)toast('🎉 ¡Completaste toda la rutina de hoy!');
+}
+
+cargarTodo();
+</script>
+</body>
+</html>

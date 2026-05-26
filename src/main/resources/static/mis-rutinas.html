@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GymSystem — Mis Rutinas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gold:#f7b731;--dark:#0f0f1a;--dark2:#1a1a2e;--dark3:#22223b;--light:#f5f5f0;--muted:#8888a0;--border:rgba(255,255,255,0.07)}
+    body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--light);min-height:100vh;display:flex}
+    .sidebar{width:230px;background:var(--dark2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 1rem;position:fixed;top:0;left:0;height:100vh;z-index:50}
+    .sidebar-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;padding:0 8px;margin-bottom:.4rem}
+    .sidebar-logo span{color:var(--gold)}
+    .sidebar-role{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:0 8px;margin-bottom:2rem}
+    .nav-section{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:0 8px;margin:1rem 0 .5rem}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--muted);font-size:14px;cursor:pointer;text-decoration:none;transition:all .2s;margin-bottom:2px}
+    .nav-item:hover{background:rgba(255,255,255,.05);color:var(--light)}
+    .nav-item.active{background:var(--gold);color:var(--dark);font-weight:600}
+    .nav-icon{font-size:16px;width:20px;text-align:center}
+    .sidebar-bottom{margin-top:auto;border-top:1px solid var(--border);padding-top:1rem}
+    .user-card{display:flex;align-items:center;gap:10px;padding:8px 12px}
+    .user-avatar-lg{width:36px;height:36px;border-radius:50%;background:#3b82f6;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+    .user-name{font-size:13px;font-weight:600}
+    .user-email{font-size:11px;color:var(--muted)}
+    .btn-logout{width:100%;margin-top:8px;padding:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;color:#fca5a5;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif}
+    .btn-logout:hover{background:rgba(239,68,68,.2)}
+    .main{margin-left:230px;flex:1;display:flex;flex-direction:column}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;border-bottom:1px solid var(--border);background:var(--dark);position:sticky;top:0;z-index:40}
+    .topbar-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px}
+    .topbar-sub{font-size:13px;color:var(--muted);margin-top:2px}
+    .badge-ent{background:rgba(59,130,246,.15);color:#93c5fd;border:1px solid rgba(59,130,246,.3);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600}
+    .content{padding:2rem;flex:1}
+
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1.5rem}
+    .stat-card{background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem}
+    .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+    .stat-value{font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1}
+    .stat-pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:5px}
+    .pill-gold{background:rgba(247,183,49,.15);color:var(--gold)}
+    .pill-green{background:rgba(16,185,129,.15);color:#34d399}
+    .pill-blue{background:rgba(59,130,246,.15);color:#93c5fd}
+    .pill-red{background:rgba(239,68,68,.15);color:#fca5a5}
+
+    .toolbar{display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+    .search-wrap{flex:1;min-width:180px;position:relative}
+    .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted)}
+    .search-wrap input{width:100%;padding:10px 12px 10px 36px;background:var(--dark2);border:1px solid var(--border);border-radius:8px;color:var(--light);font-size:14px;font-family:'DM Sans',sans-serif}
+    .search-wrap input::placeholder{color:var(--muted)}
+    .search-wrap input:focus{outline:none;border-color:var(--gold)}
+    .filter-select{padding:10px 12px;background:var(--dark2);border:1px solid var(--border);border-radius:8px;color:var(--light);font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer}
+    .filter-select option{background:var(--dark2)}
+    .btn-nuevo{background:var(--gold);color:var(--dark);border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+    .btn-nuevo:hover{opacity:.88}
+
+    .rutinas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+    .rutina-card{background:var(--dark2);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all .2s}
+    .rutina-card:hover{border-color:rgba(247,183,49,.4);transform:translateY(-2px)}
+    .rutina-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    .rutina-nombre{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px}
+    .rutina-clientes{font-size:12px;color:var(--muted);margin-top:2px}
+    .nivel-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+    .nivel-Principiante{background:rgba(16,185,129,.15);color:#34d399}
+    .nivel-Intermedio{background:rgba(247,183,49,.15);color:var(--gold)}
+    .nivel-Avanzado{background:rgba(239,68,68,.15);color:#fca5a5}
+    .rutina-body{padding:1.25rem 1.5rem}
+    .rutina-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1rem}
+    .ejercicios-lista{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+    .ejercicio-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(255,255,255,.03);border-radius:8px}
+    .ejercicio-nombre{font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}
+    .ejercicio-dot{width:5px;height:5px;background:var(--gold);border-radius:50%;flex-shrink:0}
+    .ejercicio-info{font-size:11px;color:var(--muted)}
+    .rutina-footer{display:flex;gap:8px;padding-top:1rem;border-top:1px solid var(--border)}
+    .action-btn{flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;text-align:center}
+    .action-btn:hover{background:rgba(255,255,255,.05);color:var(--light)}
+    .action-btn.primary{background:var(--gold);color:var(--dark);border-color:var(--gold);font-weight:700}
+    .action-btn.primary:hover{opacity:.88}
+    .action-btn.danger:hover{background:rgba(239,68,68,.15);color:#fca5a5;border-color:rgba(239,68,68,.3)}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem}
+    .modal{background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:14px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border)}
+    .modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px}
+    .modal-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px}
+    .modal-close:hover{color:var(--light)}
+    .modal-body{padding:1.5rem;display:flex;flex-direction:column;gap:1rem}
+    .form-group{display:flex;flex-direction:column;gap:6px}
+    .form-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .form-input,.form-select,.form-textarea{width:100%;padding:11px 14px;background:var(--dark3);border:1px solid var(--border);border-radius:8px;color:var(--light);font-family:'DM Sans',sans-serif;font-size:14px}
+    .form-input::placeholder,.form-textarea::placeholder{color:var(--muted)}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--gold)}
+    .form-select option{background:var(--dark2)}
+    .form-textarea{resize:vertical;min-height:80px}
+    .ejs-editor{display:flex;flex-direction:column;gap:8px}
+    .ej-row{display:grid;grid-template-columns:1fr 55px 65px 65px auto;gap:6px;align-items:center}
+    .btn-add-ej{padding:8px;background:rgba(247,183,49,.1);border:1px solid rgba(247,183,49,.3);border-radius:8px;color:var(--gold);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif}
+    .btn-add-ej:hover{background:rgba(247,183,49,.2)}
+    .btn-del-ej{background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;padding:4px}
+    .btn-del-ej:hover{color:#fca5a5}
+    .modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+    .btn-cancel{padding:9px 18px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--light);font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif}
+    .btn-save{padding:9px 22px;border:none;border-radius:8px;background:var(--gold);color:var(--dark);font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+    .toast{position:fixed;bottom:24px;right:24px;z-index:200;background:var(--dark2);border:1px solid var(--border);color:var(--light);padding:12px 20px;border-radius:10px;font-size:14px;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .empty-state{text-align:center;padding:4rem 2rem;color:var(--muted)}
+    .empty-state .icon{font-size:48px;margin-bottom:1rem}
+    .empty-state p{font-size:14px;margin-bottom:1.5rem}
+    .hidden{display:none!important}
+    @media(max-width:900px){.sidebar{display:none}.main{margin-left:0}.form-row{grid-template-columns:1fr}.ej-row{grid-template-columns:1fr auto}}
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-logo">GYM<span>SYSTEM</span></div>
+  <div class="sidebar-role">Panel Entrenador</div>
+  <div class="nav-section">Principal</div>
+  <a class="nav-item" href="/dashboard-entrenador.html"><span class="nav-icon">📊</span> Dashboard</a>
+  <div class="nav-section">Mi trabajo</div>
+  <a class="nav-item active" href="/mis-rutinas.html"><span class="nav-icon">🏋️</span> Mis Rutinas</a>
+  <a class="nav-item" href="/mis-clientes.html"><span class="nav-icon">👥</span> Mis Clientes</a>
+  <a class="nav-item" href="/asistencia-entrenador.html"><span class="nav-icon">📋</span> Asistencia</a>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="user-avatar-lg" id="sidebarAvatar">E</div>
+      <div><div class="user-name" id="sidebarNombre">Entrenador</div><div class="user-email" id="sidebarEmail"></div></div>
+    </div>
+    <button class="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Mis Rutinas</div>
+      <div class="topbar-sub">Crea y gestiona tus planes de entrenamiento</div>
+    </div>
+    <span class="badge-ent">ENTRENADOR</span>
+  </div>
+  <div class="content">
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total rutinas</div><div class="stat-value" id="stTotal">0</div><span class="stat-pill pill-gold">mis rutinas</span></div>
+      <div class="stat-card"><div class="stat-label">Principiante</div><div class="stat-value" id="stPrinc">0</div><span class="stat-pill pill-green">nivel</span></div>
+      <div class="stat-card"><div class="stat-label">Intermedio</div><div class="stat-value" id="stInter">0</div><span class="stat-pill pill-blue">nivel</span></div>
+      <div class="stat-card"><div class="stat-label">Avanzado</div><div class="stat-value" id="stAvan">0</div><span class="stat-pill pill-red">nivel</span></div>
+      <div class="stat-card"><div class="stat-label">Clientes con rutina</div><div class="stat-value" id="stAsig">0</div><span class="stat-pill pill-gold">asignados</span></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Buscar rutina..." oninput="renderRutinas()">
+      </div>
+      <select class="filter-select" id="filtroNivel" onchange="renderRutinas()">
+        <option value="">Todos los niveles</option>
+        <option value="Principiante">Principiante</option>
+        <option value="Intermedio">Intermedio</option>
+        <option value="Avanzado">Avanzado</option>
+      </select>
+      <button class="btn-nuevo" onclick="abrirModalNueva()">+ Nueva rutina</button>
+    </div>
+
+    <div class="rutinas-grid" id="rutinasGrid"></div>
+  </div>
+</div>
+
+<!-- MODAL RUTINA -->
+<div class="modal-overlay hidden" id="modalRutina">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitulo">NUEVA RUTINA</div>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre *</label><input class="form-input" id="fNombre" placeholder="Ej: Fuerza y resistencia"></div>
+        <div class="form-group"><label class="form-label">Nivel *</label>
+          <select class="form-select" id="fNivel"><option value="Principiante">Principiante</option><option value="Intermedio">Intermedio</option><option value="Avanzado">Avanzado</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Descripción</label>
+        <textarea class="form-textarea" id="fDesc" placeholder="Objetivo y descripción de la rutina..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ejercicios</label>
+        <div style="display:grid;grid-template-columns:1fr 55px 65px 65px 24px;gap:6px;margin-bottom:6px;padding:0 4px">
+          <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Nombre</span>
+          <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Series</span>
+          <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Reps</span>
+          <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Desc(s)</span>
+          <span></span>
+        </div>
+        <div class="ejs-editor" id="ejsEditor"></div>
+        <button class="btn-add-ej" onclick="addEj()">+ Agregar ejercicio</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-save" onclick="guardar()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API='http://localhost:8080/api';
+let sesion={};
+try{
+  sesion=JSON.parse(localStorage.getItem('usuario')||'{}');
+  if(!sesion?.rol)window.location.href='/login.html';
+  if(sesion.rol!=='ENTRENADOR')window.location.href='/login.html';
+}catch{window.location.href='/login.html';}
+document.getElementById('sidebarNombre').textContent=`${sesion.nombre||''} ${sesion.apellido||''}`;
+document.getElementById('sidebarEmail').textContent=sesion.email||'';
+document.getElementById('sidebarAvatar').textContent=((sesion.nombre||'E')[0]+(sesion.apellido||'')[0]).toUpperCase();
+function cerrarSesion(){localStorage.removeItem('usuario');window.location.href='/login.html';}
+
+let rutinas=[],asignaciones=[],ejCount=0;
+
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+function abrirModal(){document.getElementById('modalRutina').classList.remove('hidden');}
+function cerrarModal(){document.getElementById('modalRutina').classList.add('hidden');}
+document.getElementById('modalRutina').addEventListener('click',e=>{if(e.target===document.getElementById('modalRutina'))cerrarModal();});
+
+function addEj(ej={}){
+  const id=ejCount++;
+  const div=document.createElement('div');
+  div.className='ej-row';div.id=`ej-${id}`;
+  div.innerHTML=`
+    <input class="form-input" placeholder="Nombre del ejercicio" value="${ej.nombre||''}" style="padding:8px 10px;font-size:13px">
+    <input class="form-input" type="number" value="${ej.series||3}" style="padding:8px;font-size:13px">
+    <input class="form-input" type="number" value="${ej.repeticiones||12}" style="padding:8px;font-size:13px">
+    <input class="form-input" type="number" value="${ej.descansoSeg||60}" style="padding:8px;font-size:13px">
+    <button class="btn-del-ej" onclick="document.getElementById('ej-${id}').remove()">✕</button>`;
+  document.getElementById('ejsEditor').appendChild(div);
+}
+
+function leerEjs(){
+  return[...document.getElementById('ejsEditor').querySelectorAll('.ej-row')].map(r=>{
+    const ins=r.querySelectorAll('input');
+    return{nombre:ins[0].value.trim(),series:+ins[1].value,repeticiones:+ins[2].value,descansoSeg:+ins[3].value};
+  }).filter(e=>e.nombre);
+}
+
+function abrirModalNueva(){
+  document.getElementById('editId').value='';
+  document.getElementById('modalTitulo').textContent='NUEVA RUTINA';
+  document.getElementById('fNombre').value='';
+  document.getElementById('fNivel').value='Principiante';
+  document.getElementById('fDesc').value='';
+  document.getElementById('ejsEditor').innerHTML='';
+  ejCount=0;
+  addEj();addEj();addEj();
+  abrirModal();
+}
+
+function editarRutina(id){
+  const r=rutinas.find(x=>x.id===id);if(!r)return;
+  document.getElementById('editId').value=id;
+  document.getElementById('modalTitulo').textContent='EDITAR RUTINA';
+  document.getElementById('fNombre').value=r.nombre;
+  document.getElementById('fNivel').value=r.nivel;
+  document.getElementById('fDesc').value=r.descripcion||'';
+  document.getElementById('ejsEditor').innerHTML='';ejCount=0;
+  (r.ejercicios||[]).forEach(e=>addEj(e));
+  if(!(r.ejercicios||[]).length)addEj();
+  abrirModal();
+}
+
+async function guardar(){
+  const id=document.getElementById('editId').value;
+  const nombre=document.getElementById('fNombre').value.trim();
+  const nivel=document.getElementById('fNivel').value;
+  const descripcion=document.getElementById('fDesc').value.trim();
+  const ejercicios=leerEjs();
+  if(!nombre){toast('⚠️ Escribe el nombre de la rutina');return;}
+  const datos={nombre,nivel,descripcion,ejercicios,entrenadorId:sesion.entrenadorId};
+  try{
+    if(id){
+      const res=await fetch(`${API}/rutinas/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(datos)});
+      const idx=rutinas.findIndex(r=>r.id==id);
+      rutinas[idx]=res.ok?await res.json():{...rutinas[idx],...datos};
+      toast('✅ Rutina actualizada');
+    }else{
+      const res=await fetch(`${API}/rutinas`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(datos)});
+      rutinas.push(res.ok?await res.json():{...datos,id:Date.now()});
+      toast('✅ Rutina creada');
+    }
+  }catch{
+    if(id){const idx=rutinas.findIndex(r=>r.id==id);rutinas[idx]={...rutinas[idx],...datos};}
+    else rutinas.push({...datos,id:Date.now()});
+    toast('✅ Guardado (demo)');
+  }
+  cerrarModal();actualizarStats();renderRutinas();
+}
+
+async function eliminarRutina(id){
+  if(!confirm('¿Eliminar esta rutina?'))return;
+  try{await fetch(`${API}/rutinas/${id}`,{method:'DELETE'});}catch{}
+  rutinas=rutinas.filter(r=>r.id!==id);
+  toast('🗑️ Rutina eliminada');actualizarStats();renderRutinas();
+}
+
+function actualizarStats(){
+  const entId=sesion.entrenadorId;
+  const mis=rutinas.filter(r=>r.entrenadorId==entId);
+  document.getElementById('stTotal').textContent=mis.length;
+  document.getElementById('stPrinc').textContent=mis.filter(r=>r.nivel==='Principiante').length;
+  document.getElementById('stInter').textContent=mis.filter(r=>r.nivel==='Intermedio').length;
+  document.getElementById('stAvan').textContent=mis.filter(r=>r.nivel==='Avanzado').length;
+  const misIds=new Set(mis.map(r=>r.id));
+  document.getElementById('stAsig').textContent=new Set(asignaciones.filter(a=>misIds.has(a.rutinaId)).map(a=>a.clienteId)).size;
+}
+
+function renderRutinas(){
+  const entId=sesion.entrenadorId;
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const niv=document.getElementById('filtroNivel').value;
+  const data=rutinas.filter(r=>r.entrenadorId==entId&&(!q||r.nombre.toLowerCase().includes(q))&&(!niv||r.nivel===niv));
+  const grid=document.getElementById('rutinasGrid');
+  if(!data.length){
+    grid.innerHTML=`<div class="empty-state"><div class="icon">🏋️</div><p>No tienes rutinas creadas aún</p><button class="btn-nuevo" onclick="abrirModalNueva()">+ Crear primera rutina</button></div>`;
+    return;
+  }
+  const misIds=new Set(rutinas.filter(r=>r.entrenadorId==entId).map(r=>r.id));
+  grid.innerHTML=data.map(r=>{
+    const asig=asignaciones.filter(a=>a.rutinaId===r.id).length;
+    return`<div class="rutina-card">
+      <div class="rutina-header">
+        <div>
+          <div class="rutina-nombre">${r.nombre}</div>
+          <div class="rutina-clientes">${asig} cliente${asig!==1?'s':''} asignado${asig!==1?'s':''}</div>
+        </div>
+        <span class="nivel-badge nivel-${r.nivel}">${r.nivel}</span>
+      </div>
+      <div class="rutina-body">
+        ${r.descripcion?`<div class="rutina-desc">${r.descripcion}</div>`:''}
+        <div class="ejercicios-lista">
+          ${(r.ejercicios||[]).map(e=>`
+            <div class="ejercicio-row">
+              <div class="ejercicio-nombre"><div class="ejercicio-dot"></div>${e.nombre}</div>
+              <div class="ejercicio-info">${e.series} series × ${e.repeticiones} reps · ${e.descansoSeg}s desc.</div>
+            </div>`).join('')}
+        </div>
+        <div class="rutina-footer">
+          <button class="action-btn primary" onclick="editarRutina(${r.id})">✏️ Editar</button>
+          <button class="action-btn danger" onclick="eliminarRutina(${r.id})">🗑️ Eliminar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function cargarTodo(){
+  try{
+    const[resR,resA]=await Promise.all([fetch(`${API}/rutinas`),fetch(`${API}/rutinas/asignaciones`)]);
+    rutinas=resR.ok?await resR.json():demoRutinas();
+    asignaciones=resA.ok?await resA.json():demoAsig();
+  }catch{rutinas=demoRutinas();asignaciones=demoAsig();}
+  actualizarStats();renderRutinas();
+}
+
+
+cargarTodo();
+</script>
+</body>
+</html>

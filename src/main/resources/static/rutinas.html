@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GymSystem — Rutinas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gold:#f7b731;--dark:#0f0f1a;--dark2:#1a1a2e;--dark3:#22223b;--light:#f5f5f0;--muted:#8888a0;--border:rgba(255,255,255,0.07)}
+    body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--light);min-height:100vh;display:flex}
+    .sidebar{width:230px;background:var(--dark2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 1rem;position:fixed;top:0;left:0;height:100vh;z-index:50}
+    .sidebar-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;padding:0 8px;margin-bottom:.4rem}
+    .sidebar-logo span{color:var(--gold)}
+    .sidebar-role{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:0 8px;margin-bottom:2rem}
+    .nav-section{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:0 8px;margin:1rem 0 .5rem}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--muted);font-size:14px;cursor:pointer;text-decoration:none;transition:all .2s;margin-bottom:2px}
+    .nav-item:hover{background:rgba(255,255,255,.05);color:var(--light)}
+    .nav-item.active{background:var(--gold);color:var(--dark);font-weight:600}
+    .nav-icon{font-size:16px;width:20px;text-align:center}
+    .sidebar-bottom{margin-top:auto;border-top:1px solid var(--border);padding-top:1rem}
+    .user-card{display:flex;align-items:center;gap:10px;padding:8px 12px}
+    .user-avatar{width:34px;height:34px;border-radius:50%;background:var(--gold);color:var(--dark);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+    .user-name{font-size:13px;font-weight:600}
+    .user-email{font-size:11px;color:var(--muted)}
+    .btn-logout{width:100%;margin-top:8px;padding:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;color:#fca5a5;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif}
+    .btn-logout:hover{background:rgba(239,68,68,.2)}
+    .main{margin-left:230px;flex:1;display:flex;flex-direction:column}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;border-bottom:1px solid var(--border);background:var(--dark);position:sticky;top:0;z-index:40}
+    .topbar-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px}
+    .topbar-sub{font-size:13px;color:var(--muted);margin-top:2px}
+    .badge-admin{background:rgba(247,183,49,.15);color:var(--gold);border:1px solid rgba(247,183,49,.3);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600}
+    .content{padding:2rem;flex:1}
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1.5rem}
+    .stat-card{background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;transition:border-color .2s}
+    .stat-card:hover{border-color:rgba(247,183,49,.3)}
+    .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+    .stat-value{font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1}
+    .stat-pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:5px}
+    .pill-gold{background:rgba(247,183,49,.15);color:var(--gold)}
+    .pill-green{background:rgba(16,185,129,.15);color:#34d399}
+    .pill-blue{background:rgba(59,130,246,.15);color:#93c5fd}
+    .pill-purple{background:rgba(139,92,246,.15);color:#c4b5fd}
+    .tabs-bar{display:flex;gap:4px;margin-bottom:1.25rem;background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:5px;width:fit-content}
+    .tab-btn{padding:8px 18px;border-radius:7px;border:none;background:none;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+    .tab-btn.active{background:var(--gold);color:var(--dark);font-weight:700}
+    .toolbar{display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+    .search-wrap{flex:1;min-width:200px;position:relative}
+    .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted)}
+    .search-wrap input{width:100%;padding:10px 12px 10px 36px;background:var(--dark2);border:1px solid var(--border);border-radius:8px;color:var(--light);font-size:14px;font-family:'DM Sans',sans-serif}
+    .search-wrap input::placeholder{color:var(--muted)}
+    .search-wrap input:focus{outline:none;border-color:var(--gold)}
+    .filter-select{padding:10px 12px;background:var(--dark2);border:1px solid var(--border);border-radius:8px;color:var(--light);font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer}
+    .filter-select option{background:var(--dark2)}
+    .btn-nuevo{display:flex;align-items:center;gap:8px;background:var(--gold);color:var(--dark);border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif}
+    .btn-nuevo:hover{opacity:.88}
+
+    /* CARDS DE RUTINAS */
+    .rutinas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+    .rutina-card{background:var(--dark2);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all .2s}
+    .rutina-card:hover{border-color:rgba(247,183,49,.3);transform:translateY(-2px)}
+    .rutina-header{padding:1.25rem 1.25rem .75rem;border-bottom:1px solid var(--border)}
+    .rutina-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:.5rem}
+    .rutina-nombre{font-size:15px;font-weight:700;line-height:1.3}
+    .nivel-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+    .niv-Principiante{background:rgba(16,185,129,.15);color:#34d399}
+    .niv-Intermedio{background:rgba(247,183,49,.15);color:var(--gold)}
+    .niv-Avanzado{background:rgba(239,68,68,.15);color:#fca5a5}
+    .rutina-desc{font-size:13px;color:var(--muted);line-height:1.5}
+    .rutina-entrenador{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:.5rem}
+    .avatar-xs{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0}
+    .rutina-body{padding:1rem 1.25rem}
+    .ejercicios-list{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem}
+    .ejercicio-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--dark3);border-radius:7px}
+    .ejercicio-nombre{font-size:13px;font-weight:500}
+    .ejercicio-detalle{font-size:11px;color:var(--muted)}
+    .rutina-footer{display:flex;gap:8px;padding:.75rem 1.25rem;border-top:1px solid var(--border)}
+    .rutina-stat{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
+    .rutina-actions{display:flex;gap:6px;margin-left:auto}
+    .action-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 11px;font-size:12px;cursor:pointer;color:var(--muted);transition:all .15s;font-family:'DM Sans',sans-serif}
+    .action-btn:hover{background:rgba(255,255,255,.05);color:var(--light)}
+    .action-btn.danger:hover{background:rgba(239,68,68,.15);color:#fca5a5;border-color:rgba(239,68,68,.3)}
+    .action-btn.assign:hover{background:rgba(16,185,129,.15);color:#34d399;border-color:rgba(16,185,129,.3)}
+
+    /* ASIGNACIONES */
+    .table-wrap{background:var(--dark2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    thead{background:rgba(255,255,255,.02)}
+    th{padding:11px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
+    td{padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+    tbody tr:last-child td{border-bottom:none}
+    tbody tr:hover{background:rgba(255,255,255,.02)}
+    .cell-user{display:flex;align-items:center;gap:10px}
+    .avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+    .cell-name{font-weight:500;font-size:13px}
+    .cell-sub{font-size:11px;color:var(--muted)}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem}
+    .modal{background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:14px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border)}
+    .modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px}
+    .modal-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px}
+    .modal-close:hover{color:var(--light)}
+    .modal-body{padding:1.5rem;display:flex;flex-direction:column;gap:1rem}
+    .form-group{display:flex;flex-direction:column;gap:6px}
+    .form-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .form-input,.form-select,.form-textarea{width:100%;padding:11px 14px;background:var(--dark3);border:1px solid var(--border);border-radius:8px;color:var(--light);font-family:'DM Sans',sans-serif;font-size:14px}
+    .form-input::placeholder,.form-textarea::placeholder{color:var(--muted)}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--gold)}
+    .form-select option{background:var(--dark2)}
+    .form-textarea{resize:vertical;min-height:70px}
+    .ejercicios-editor{display:flex;flex-direction:column;gap:8px}
+    .ejercicio-edit-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;align-items:center}
+    .btn-add-ej{background:none;border:1px dashed var(--border);border-radius:8px;padding:8px;color:var(--muted);cursor:pointer;font-size:13px;width:100%;font-family:'DM Sans',sans-serif;transition:all .2s}
+    .btn-add-ej:hover{border-color:var(--gold);color:var(--gold)}
+    .btn-del-ej{background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;padding:2px 6px}
+    .btn-del-ej:hover{color:#fca5a5}
+    .modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+    .btn-cancel{padding:9px 18px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--light);font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif}
+    .btn-save{padding:9px 22px;border:none;border-radius:8px;background:var(--gold);color:var(--dark);font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
+    .btn-save:hover{opacity:.88}
+    .toast{position:fixed;bottom:24px;right:24px;z-index:200;background:var(--dark2);border:1px solid var(--border);color:var(--light);padding:12px 20px;border-radius:10px;font-size:14px;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .hidden{display:none!important}
+    @media(max-width:900px){.sidebar{display:none}.main{margin-left:0}.form-row{grid-template-columns:1fr}.ejercicio-edit-row{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-logo">GYM<span>SYSTEM</span></div>
+  <div class="sidebar-role">Panel Administrador</div>
+  <div class="nav-section">Principal</div>
+  <a class="nav-item" href="/dashboard-admin.html"><span class="nav-icon">📊</span> Dashboard</a>
+  <div class="nav-section">Gestión</div>
+  <a class="nav-item" href="/usuarios.html"><span class="nav-icon">👥</span> Usuarios</a>
+  <a class="nav-item" href="/membresias.html"><span class="nav-icon">💳</span> Membresías</a>
+  <a class="nav-item" href="/pagos.html"><span class="nav-icon">💰</span> Pagos</a>
+  <a class="nav-item" href="/asistencia.html"><span class="nav-icon">📋</span> Asistencia</a>
+  <a class="nav-item active" href="/rutinas.html"><span class="nav-icon">🏋️</span> Rutinas</a>
+  <div class="nav-section">Sistema</div>
+  <a class="nav-item" href="/reportes.html"><span class="nav-icon">📈</span> Reportes</a>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="user-avatar" id="sidebarAvatar">A</div>
+      <div><div class="user-name" id="sidebarNombre">Admin</div><div class="user-email" id="sidebarEmail">admin@gym.com</div></div>
+    </div>
+    <button class="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Rutinas</div>
+      <div class="topbar-sub">Planes de entrenamiento y asignaciones a clientes</div>
+    </div>
+    <span class="badge-admin">ADMINISTRADOR</span>
+  </div>
+
+  <div class="content">
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total rutinas</div><div class="stat-value" id="stTotal">0</div><span class="stat-pill pill-gold">creadas</span></div>
+      <div class="stat-card"><div class="stat-label">Principiante</div><div class="stat-value" id="stPrinc">0</div><span class="stat-pill pill-green">nivel</span></div>
+      <div class="stat-card"><div class="stat-label">Intermedio</div><div class="stat-value" id="stInter">0</div><span class="stat-pill pill-gold">nivel</span></div>
+      <div class="stat-card"><div class="stat-label">Avanzado</div><div class="stat-value" id="stAvanz">0</div><span class="stat-pill pill-purple">nivel</span></div>
+      <div class="stat-card"><div class="stat-label">Asignaciones</div><div class="stat-value" id="stAsign">0</div><span class="stat-pill pill-blue">activas</span></div>
+    </div>
+
+    <div class="tabs-bar">
+      <button class="tab-btn active" onclick="switchTab('rutinas')">Rutinas</button>
+      <button class="tab-btn" onclick="switchTab('asignaciones')">Asignaciones</button>
+    </div>
+
+    <!-- VISTA RUTINAS -->
+    <div id="vistaRutinas">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="searchRutina" placeholder="Buscar rutina..." oninput="renderRutinas()">
+        </div>
+        <select class="filter-select" id="filtroNivel" onchange="renderRutinas()">
+          <option value="">Todos los niveles</option>
+          <option value="Principiante">Principiante</option>
+          <option value="Intermedio">Intermedio</option>
+          <option value="Avanzado">Avanzado</option>
+        </select>
+        <button class="btn-nuevo" onclick="abrirModalRutina()">+ Nueva rutina</button>
+      </div>
+      <div class="rutinas-grid" id="rutinasGrid"></div>
+    </div>
+
+    <!-- VISTA ASIGNACIONES -->
+    <div id="vistaAsignaciones" class="hidden">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="searchAsign" placeholder="Buscar por cliente..." oninput="renderAsignaciones()">
+        </div>
+        <button class="btn-nuevo" onclick="abrirModalAsignar()">+ Asignar rutina</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Cliente</th><th>Rutina</th><th>Nivel</th><th>Entrenador</th><th>Fecha asignación</th><th>Acciones</th></tr></thead>
+          <tbody id="tablaAsign"><tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">Cargando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL RUTINA -->
+<div class="modal-overlay hidden" id="modalRutina">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalRutTitulo">NUEVA RUTINA</div>
+      <button class="modal-close" onclick="cerrarModal('modalRutina')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editRutId">
+      <div class="form-group"><label class="form-label">Nombre de la rutina *</label>
+        <input class="form-input" id="rNombre" placeholder="Ej: Fuerza funcional, Cardio HIIT...">
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nivel *</label>
+          <select class="form-select" id="rNivel">
+            <option value="Principiante">Principiante</option>
+            <option value="Intermedio">Intermedio</option>
+            <option value="Avanzado">Avanzado</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Entrenador</label>
+          <select class="form-select" id="rEntrenador">
+            <option value="">Sin asignar</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Descripción</label>
+        <textarea class="form-textarea" id="rDescripcion" placeholder="Describe el objetivo de la rutina..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ejercicios</label>
+        <div class="ejercicios-editor" id="ejerciciosEditor"></div>
+        <button class="btn-add-ej" onclick="agregarEjercicio()">+ Agregar ejercicio</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="cerrarModal('modalRutina')">Cancelar</button>
+      <button class="btn-save" onclick="guardarRutina()">Guardar rutina</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ASIGNAR -->
+<div class="modal-overlay hidden" id="modalAsignar">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">ASIGNAR RUTINA</div>
+      <button class="modal-close" onclick="cerrarModal('modalAsignar')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Cliente *</label>
+        <select class="form-select" id="aCliente"><option value="">Selecciona un cliente...</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Rutina *</label>
+        <select class="form-select" id="aRutina"><option value="">Selecciona una rutina...</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Fecha de inicio</label>
+        <input class="form-input" id="aFecha" type="date">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="cerrarModal('modalAsignar')">Cancelar</button>
+      <button class="btn-save" onclick="guardarAsignacion()">Asignar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API='http://localhost:8080/api';
+let sesion={};
+try{
+  sesion=JSON.parse(localStorage.getItem('usuario')||'{}');
+  if(!sesion?.rol) window.location.href='/login.html';
+  if(sesion.rol!=='ADMIN') window.location.href='/login.html';
+}catch{window.location.href='/login.html';}
+document.getElementById('sidebarNombre').textContent=sesion.nombre||'Admin';
+document.getElementById('sidebarEmail').textContent=sesion.email||'';
+document.getElementById('sidebarAvatar').textContent=((sesion.nombre||'A')[0]+(sesion.apellido||'')[0]).toUpperCase();
+function cerrarSesion(){localStorage.removeItem('usuario');window.location.href='/login.html';}
+
+let rutinas=[],asignaciones=[],entrenadores=[],clientes=[];
+
+const avatarP=[
+  {bg:'rgba(247,183,49,0.2)',fg:'#f7b731'},{bg:'rgba(16,185,129,0.2)',fg:'#34d399'},
+  {bg:'rgba(59,130,246,0.2)',fg:'#93c5fd'},{bg:'rgba(239,68,68,0.2)',fg:'#fca5a5'},
+  {bg:'rgba(139,92,246,0.2)',fg:'#c4b5fd'},
+];
+function avatarStyle(id){const c=avatarP[(id||0)%avatarP.length];return `background:${c.bg};color:${c.fg}`;}
+function iniciales(n,a){return((n||'')[0]||'').toUpperCase()+((a||'')[0]||'').toUpperCase();}
+function fmtFecha(d){if(!d)return'—';return new Date(d).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'});}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+function abrirModal(id){document.getElementById(id).classList.remove('hidden');}
+function cerrarModal(id){document.getElementById(id).classList.add('hidden');}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.add('hidden');}));
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(tab==='rutinas'&&i===0)||(tab==='asignaciones'&&i===1)));
+  document.getElementById('vistaRutinas').classList.toggle('hidden',tab!=='rutinas');
+  document.getElementById('vistaAsignaciones').classList.toggle('hidden',tab!=='asignaciones');
+  if(tab==='asignaciones')renderAsignaciones();
+}
+
+async function cargarTodo() {
+    try {
+        const [resR, resA, resE, resC, resU] = await Promise.all([
+            fetch(`${API}/rutinas`),
+            fetch(`${API}/rutinas/asignaciones`),
+            fetch(`${API}/entrenadores`),
+            fetch(`${API}/clientes`),
+            fetch(`${API}/usuarios`) // Traemos usuarios para los nombres
+        ]);
+
+        rutinas = resR.ok ? await resR.json() : [];
+        asignaciones = resA.ok ? await resA.json() : [];
+        entrenadores = resE.ok ? await resE.json() : [];
+        clientes = resC.ok ? await resC.json() : [];
+        usuarios = resU.ok ? await resU.json() : [];
+
+        console.log("✅ Datos cargados de la base de datos");
+        actualizarStats();
+        poblarSelectores();
+        renderRutinas();
+        renderAsignaciones();
+    } catch (e) {
+        console.error("❌ Error de conexión:", e);
+    }
+}
+
+function actualizarStats(){
+  document.getElementById('stTotal').textContent=rutinas.length;
+  document.getElementById('stPrinc').textContent=rutinas.filter(r=>r.nivel==='Principiante').length;
+  document.getElementById('stInter').textContent=rutinas.filter(r=>r.nivel==='Intermedio').length;
+  document.getElementById('stAvanz').textContent=rutinas.filter(r=>r.nivel==='Avanzado').length;
+  document.getElementById('stAsign').textContent=asignaciones.length;
+}
+
+function poblarSelectores(){
+  const optE=entrenadores.map(e=>`<option value="${e.id}">${e.nombre} ${e.apellido}</option>`).join('');
+  document.getElementById('rEntrenador').innerHTML='<option value="">Sin asignar</option>'+optE;
+  document.getElementById('aCliente').innerHTML='<option value="">Selecciona un cliente...</option>'+
+    clientes.map(c=>`<option value="${c.id}">${c.nombre} ${c.apellido}</option>`).join('');
+  document.getElementById('aRutina').innerHTML='<option value="">Selecciona una rutina...</option>'+
+    rutinas.map(r=>`<option value="${r.id}">${r.nombre} (${r.nivel})</option>`).join('');
+}
+
+function renderRutinas(){
+  const q=document.getElementById('searchRutina').value.toLowerCase();
+  const niv=document.getElementById('filtroNivel').value;
+  const data=rutinas.filter(r=>{
+    const matchQ=!q||r.nombre.toLowerCase().includes(q)||(r.descripcion||'').toLowerCase().includes(q);
+    return matchQ&&(!niv||r.nivel===niv);
+  });
+  const grid=document.getElementById('rutinasGrid');
+  if(!data.length){grid.innerHTML=`<div style="color:var(--muted);padding:2rem;font-size:14px">No se encontraron rutinas</div>`;return;}
+  grid.innerHTML=data.map(r=>{
+    const entrenador=entrenadores.find(e=>e.id===r.entrenadorId);
+    const ejs=r.ejercicios||[];
+    return`<div class="rutina-card">
+      <div class="rutina-header">
+        <div class="rutina-top">
+          <div class="rutina-nombre">${r.nombre}</div>
+          <span class="nivel-badge niv-${r.nivel}">${r.nivel}</span>
+        </div>
+        <div class="rutina-desc">${r.descripcion||'Sin descripción'}</div>
+        ${entrenador?`<div class="rutina-entrenador">
+          <div class="avatar-xs" style="${avatarStyle(entrenador.id)}">${iniciales(entrenador.nombre,entrenador.apellido)}</div>
+          ${entrenador.nombre} ${entrenador.apellido}
+        </div>`:''}
+      </div>
+      <div class="rutina-body">
+        <div class="ejercicios-list">
+          ${ejs.slice(0,3).map(e=>`
+            <div class="ejercicio-item">
+              <span class="ejercicio-nombre">${e.nombre}</span>
+              <span class="ejercicio-detalle">${e.series||'—'}x${e.repeticiones||'—'}</span>
+            </div>`).join('')}
+          ${ejs.length>3?`<div style="font-size:11px;color:var(--muted);text-align:center;padding:4px">+${ejs.length-3} ejercicios más</div>`:''}
+          ${ejs.length===0?`<div style="font-size:12px;color:var(--muted)">Sin ejercicios agregados</div>`:''}
+        </div>
+      </div>
+      <div class="rutina-footer">
+        <span class="rutina-stat">🏋️ ${ejs.length} ejerc.</span>
+        <div class="rutina-actions">
+          <button class="action-btn assign" onclick="abrirModalAsignarRutina(${r.id})">Asignar</button>
+          <button class="action-btn" onclick="abrirModalEditarRutina(${r.id})">Editar</button>
+          <button class="action-btn danger" onclick="eliminarRutina(${r.id})">Eliminar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderAsignaciones(){
+  const q=document.getElementById('searchAsign').value.toLowerCase();
+  const data=asignaciones.filter(a=>`${a.clienteNombre||''} ${a.clienteApellido||''}`.toLowerCase().includes(q));
+  const tbody=document.getElementById('tablaAsign');
+  if(!data.length){tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">Sin asignaciones registradas</td></tr>`;return;}
+  tbody.innerHTML=data.map(a=>{
+    const entrenador=entrenadores.find(e=>e.id===a.entrenadorId);
+    return`<tr>
+      <td><div class="cell-user">
+        <div class="avatar" style="${avatarStyle(a.clienteId)}">${iniciales(a.clienteNombre,a.clienteApellido)}</div>
+        <div><div class="cell-name">${a.clienteNombre||'—'} ${a.clienteApellido||''}</div></div>
+      </div></td>
+      <td style="font-weight:500">${a.rutinaNombre||'—'}</td>
+      <td><span class="nivel-badge niv-${a.rutinaLevel||'Principiante'}">${a.rutinaLevel||'—'}</span></td>
+      <td style="color:var(--muted);font-size:13px">${entrenador?`${entrenador.nombre} ${entrenador.apellido}`:'Sin asignar'}</td>
+      <td style="color:var(--muted);font-size:12px">${fmtFecha(a.fechaAsignacion)}</td>
+      <td><button class="action-btn danger" onclick="eliminarAsignacion(${a.id})">Quitar</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Ejercicios en el editor ──
+let ejerciciosTemp=[];
+function renderEjerciciosEditor(){
+  document.getElementById('ejerciciosEditor').innerHTML=ejerciciosTemp.map((e,i)=>`
+    <div class="ejercicio-edit-row">
+      <input class="form-input" placeholder="Nombre ejercicio" value="${e.nombre||''}" oninput="ejerciciosTemp[${i}].nombre=this.value">
+      <input class="form-input" type="number" placeholder="Series" value="${e.series||''}" oninput="ejerciciosTemp[${i}].series=this.value">
+      <input class="form-input" type="number" placeholder="Reps" value="${e.repeticiones||''}" oninput="ejerciciosTemp[${i}].repeticiones=this.value">
+      <input class="form-input" type="number" placeholder="Desc(s)" value="${e.descansoSeg||''}" oninput="ejerciciosTemp[${i}].descansoSeg=this.value">
+      <button class="btn-del-ej" onclick="eliminarEjTemp(${i})">✕</button>
+    </div>`).join('');
+}
+function agregarEjercicio(){ejerciciosTemp.push({nombre:'',series:'',repeticiones:'',descansoSeg:''});renderEjerciciosEditor();}
+function eliminarEjTemp(i){ejerciciosTemp.splice(i,1);renderEjerciciosEditor();}
+
+// ── Modal nueva rutina ──
+function abrirModalRutina(){
+  document.getElementById('editRutId').value='';
+  document.getElementById('modalRutTitulo').textContent='NUEVA RUTINA';
+  document.getElementById('rNombre').value='';
+  document.getElementById('rNivel').value='Principiante';
+  document.getElementById('rEntrenador').value='';
+  document.getElementById('rDescripcion').value='';
+  ejerciciosTemp=[];renderEjerciciosEditor();
+  abrirModal('modalRutina');
+}
+function abrirModalEditarRutina(id){
+  const r=rutinas.find(x=>x.id===id);if(!r)return;
+  document.getElementById('editRutId').value=id;
+  document.getElementById('modalRutTitulo').textContent='EDITAR RUTINA';
+  document.getElementById('rNombre').value=r.nombre;
+  document.getElementById('rNivel').value=r.nivel;
+  document.getElementById('rEntrenador').value=r.entrenadorId||'';
+  document.getElementById('rDescripcion').value=r.descripcion||'';
+  ejerciciosTemp=JSON.parse(JSON.stringify(r.ejercicios||[]));
+  renderEjerciciosEditor();
+  abrirModal('modalRutina');
+}
+function abrirModalAsignarRutina(rutinaId){
+  document.getElementById('aRutina').value=rutinaId;
+  document.getElementById('aCliente').value='';
+  document.getElementById('aFecha').value=new Date().toISOString().split('T')[0];
+  abrirModal('modalAsignar');
+}
+function abrirModalAsignar(){
+  document.getElementById('aRutina').value='';
+  document.getElementById('aCliente').value='';
+  document.getElementById('aFecha').value=new Date().toISOString().split('T')[0];
+  abrirModal('modalAsignar');
+}
+
+async function guardarRutina(){
+  const id = document.getElementById('editRutId').value;
+  const nombre = document.getElementById('rNombre').value.trim();
+  const nivel = document.getElementById('rNivel').value;
+  const descripcion = document.getElementById('rDescripcion').value.trim();
+  
+  
+  const sesionStr = localStorage.getItem('usuario');
+  const sesion = sesionStr ? JSON.parse(sesionStr) : null;
+
+  if(!nombre){toast('⚠️ Escribe el nombre de la rutina');return;}
+  
+  
+  const finalEntrenadorId = (sesion && sesion.entrenadorId) ? sesion.entrenadorId : document.getElementById('rEntrenador').value;
+
+  const datos = {
+    nombre,
+    nivel,
+    entrenadorId: finalEntrenadorId ? Number(finalEntrenadorId) : null,
+    descripcion,
+    ejercicios: ejerciciosTemp.filter(e => e.nombre)
+  };
+
+  try {
+    if(id){
+      const res = await fetch(`${API}/rutinas/${id}`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(datos)
+      });
+      if(!res.ok) throw new Error(await res.text()); 
+      const idx = rutinas.findIndex(r => r.id == id);
+      rutinas[idx] = await res.json();
+      toast('✅ Rutina actualizada');
+    } else {
+      const res = await fetch(`${API}/rutinas`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(datos)
+      });
+      if(!res.ok) throw new Error(await res.text()); 
+      rutinas.push(await res.json());
+      toast('✅ Rutina creada');
+    }
+  } catch(e) {
+    console.error("Error al guardar en BD:", e);
+    
+    alert('Error real de Base de Datos: ' + e.message);
+    return; 
+  }
+  cerrarModal('modalRutina');actualizarStats();poblarSelectores();renderRutinas();
+}
+
+async function eliminarRutina(id){
+  if(!confirm('¿Eliminar esta rutina?'))return;
+  try{await fetch(`${API}/rutinas/${id}`,{method:'DELETE'});}catch{}
+  rutinas=rutinas.filter(r=>r.id!==id);
+  toast('🗑️ Rutina eliminada');actualizarStats();renderRutinas();
+}
+
+async function guardarAsignacion() {
+    const clienteId = document.getElementById('aCliente').value;
+    const rutinaId = document.getElementById('aRutina').value;
+    const fecha = document.getElementById('aFecha').value;
+
+    if (!clienteId || !rutinaId) { toast('⚠️ Datos incompletos'); return; }
+
+    const datos = {
+        clienteId: Number(clienteId),
+        rutinaId: Number(rutinaId),
+        fechaAsignacion: fecha
+    };
+
+    try {
+        const res = await fetch(`${API}/rutinas/asignaciones`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        toast('✅ Rutina asignada');
+        cerrarModal('modalAsignar');
+        cargarTodo();
+    } catch (e) {
+        alert("Error al asignar: " + e.message);
+    }
+  }
+
+async function eliminarAsignacion(id){
+  if(!confirm('¿Quitar esta asignación?'))return;
+  try{await fetch(`${API}/rutinas/asignaciones/${id}`,{method:'DELETE'});}catch{}
+  asignaciones=asignaciones.filter(a=>a.id!==id);
+  toast('✅ Asignación eliminada');actualizarStats();renderAsignaciones();
+}
+
+cargarTodo();
+</script>
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GymSystem — Mis Clientes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gold:#f7b731;--dark:#0f0f1a;--dark2:#1a1a2e;--dark3:#22223b;--light:#f5f5f0;--muted:#8888a0;--border:rgba(255,255,255,0.07)}
+    body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--light);min-height:100vh;display:flex}
+    .sidebar{width:230px;background:var(--dark2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 1rem;position:fixed;top:0;left:0;height:100vh;z-index:50}
+    .sidebar-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;padding:0 8px;margin-bottom:.4rem}
+    .sidebar-logo span{color:var(--gold)}
+    .sidebar-role{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:0 8px;margin-bottom:2rem}
+    .nav-section{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:0 8px;margin:1rem 0 .5rem}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--muted);font-size:14px;cursor:pointer;text-decoration:none;transition:all .2s;margin-bottom:2px}
+    .nav-item:hover{background:rgba(255,255,255,.05);color:var(--light)}
+    .nav-item.active{background:var(--gold);color:var(--dark);font-weight:600}
+    .nav-icon{font-size:16px;width:20px;text-align:center}
+    .sidebar-bottom{margin-top:auto;border-top:1px solid var(--border);padding-top:1rem}
+    .user-card{display:flex;align-items:center;gap:10px;padding:8px 12px}
+    .user-avatar-lg{width:36px;height:36px;border-radius:50%;background:#3b82f6;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+    .user-name{font-size:13px;font-weight:600}
+    .user-email{font-size:11px;color:var(--muted)}
+    .btn-logout{width:100%;margin-top:8px;padding:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;color:#fca5a5;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif}
+    .btn-logout:hover{background:rgba(239,68,68,.2)}
+    .main{margin-left:230px;flex:1;display:flex;flex-direction:column}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;border-bottom:1px solid var(--border);background:var(--dark);position:sticky;top:0;z-index:40}
+    .topbar-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px}
+    .topbar-sub{font-size:13px;color:var(--muted);margin-top:2px}
+    .badge-ent{background:rgba(59,130,246,.15);color:#93c5fd;border:1px solid rgba(59,130,246,.3);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600}
+    .content{padding:2rem;flex:1}
+
+    /* STATS */
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1.5rem}
+    .stat-card{background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;transition:border-color .2s}
+    .stat-card:hover{border-color:rgba(247,183,49,.3)}
+    .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+    .stat-value{font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1}
+    .stat-pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:5px}
+    .pill-gold{background:rgba(247,183,49,.15);color:var(--gold)}
+    .pill-green{background:rgba(16,185,129,.15);color:#34d399}
+    .pill-blue{background:rgba(59,130,246,.15);color:#93c5fd}
+    .pill-gray{background:rgba(255,255,255,.07);color:var(--muted)}
+
+    /* TOOLBAR */
+    .toolbar{display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+    .search-wrap{flex:1;min-width:200px;position:relative}
+    .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted)}
+    .search-wrap input{width:100%;padding:10px 12px 10px 36px;background:var(--dark2);border:1px solid var(--border);border-radius:8px;color:var(--light);font-size:14px;font-family:'DM Sans',sans-serif}
+    .search-wrap input::placeholder{color:var(--muted)}
+    .search-wrap input:focus{outline:none;border-color:var(--gold)}
+    .filter-select{padding:10px 12px;background:var(--dark2);border:1px solid var(--border);border-radius:8px;color:var(--light);font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer}
+    .filter-select option{background:var(--dark2)}
+
+    /* GRID CLIENTES */
+    .clientes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+    .cliente-card{background:var(--dark2);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all .2s}
+    .cliente-card:hover{border-color:rgba(247,183,49,.3);transform:translateY(-2px)}
+    .cliente-header{padding:1.25rem 1.5rem;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border)}
+    .avatar{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
+    .cliente-info-h{flex:1}
+    .cliente-nombre{font-size:15px;font-weight:600}
+    .cliente-email{font-size:12px;color:var(--muted);margin-top:2px}
+    .estado-pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px}
+    .dot{width:5px;height:5px;border-radius:50%}
+    .est-activo{background:rgba(16,185,129,.12);color:#34d399}
+    .est-activo .dot{background:#10b981}
+    .est-inactivo{background:rgba(255,255,255,.05);color:var(--muted)}
+    .est-inactivo .dot{background:var(--muted)}
+    .cliente-body{padding:1.25rem 1.5rem}
+    .info-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:10px}
+    .info-key{color:var(--muted)}
+    .info-val{font-weight:500}
+    .nivel-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+    .nivel-Principiante{background:rgba(16,185,129,.15);color:#34d399}
+    .nivel-Intermedio{background:rgba(247,183,49,.15);color:var(--gold)}
+    .nivel-Avanzado{background:rgba(239,68,68,.15);color:#fca5a5}
+
+    /* ASISTENCIA MINI */
+    .asist-mini{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+    .asist-mini-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+    .asist-mini-bars{display:flex;align-items:flex-end;gap:4px;height:36px}
+    .asist-bar{flex:1;border-radius:3px 3px 0 0;background:rgba(247,183,49,.15);transition:height .4s}
+    .asist-bar.tiene{background:rgba(247,183,49,.6)}
+    .asist-bar.hoy{background:var(--gold)}
+
+    /* MODAL DETALLE */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem}
+    .modal{background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:14px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border)}
+    .modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px}
+    .modal-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px}
+    .modal-close:hover{color:var(--light)}
+    .modal-body{padding:1.5rem;display:flex;flex-direction:column;gap:1rem}
+    .modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end}
+    .btn-cerrar{padding:9px 22px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--light);font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+    /* detalle */
+    .detalle-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;margin:0 auto 1rem}
+    .detalle-nombre{text-align:center;font-size:20px;font-weight:700}
+    .detalle-email{text-align:center;font-size:13px;color:var(--muted);margin-top:4px;margin-bottom:1rem}
+    .detalle-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px}
+    .detalle-row:last-child{border-bottom:none}
+    .detalle-key{color:var(--muted)}
+
+    .asist-historial{display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto}
+    .asist-hist-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(255,255,255,.03);border-radius:8px;font-size:13px}
+    .asist-hist-fecha{color:var(--muted)}
+    .asist-hist-hora{font-weight:500;color:var(--gold)}
+
+    /* ACTION FOOTER CARD */
+    .cliente-footer{padding:.75rem 1.5rem;background:rgba(255,255,255,.02);border-top:1px solid var(--border);display:flex;gap:8px}
+    .btn-card{flex:1;padding:7px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+    .btn-card:hover{background:rgba(255,255,255,.05);color:var(--light)}
+    .btn-card.gold{background:rgba(247,183,49,.1);color:var(--gold);border-color:rgba(247,183,49,.3)}
+    .btn-card.gold:hover{background:rgba(247,183,49,.2)}
+
+    .toast{position:fixed;bottom:24px;right:24px;z-index:200;background:var(--dark2);border:1px solid var(--border);color:var(--light);padding:12px 20px;border-radius:10px;font-size:14px;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .empty-state{text-align:center;padding:4rem 2rem;color:var(--muted)}
+    .empty-state .icon{font-size:48px;margin-bottom:1rem}
+    .hidden{display:none!important}
+    @media(max-width:900px){.sidebar{display:none}.main{margin-left:0}}
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-logo">GYM<span>SYSTEM</span></div>
+  <div class="sidebar-role">Panel Entrenador</div>
+  <div class="nav-section">Principal</div>
+  <a class="nav-item" href="/dashboard-entrenador.html"><span class="nav-icon">📊</span> Dashboard</a>
+  <div class="nav-section">Mi trabajo</div>
+  <a class="nav-item" href="/mis-rutinas.html"><span class="nav-icon">🏋️</span> Mis Rutinas</a>
+  <a class="nav-item active" href="/mis-clientes.html"><span class="nav-icon">👥</span> Mis Clientes</a>
+  <a class="nav-item" href="/asistencia-entrenador.html"><span class="nav-icon">📋</span> Asistencia</a>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="user-avatar-lg" id="sidebarAvatar">E</div>
+      <div><div class="user-name" id="sidebarNombre">Entrenador</div><div class="user-email" id="sidebarEmail"></div></div>
+    </div>
+    <button class="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Mis Clientes</div>
+      <div class="topbar-sub">Seguimiento y progreso de tus clientes asignados</div>
+    </div>
+    <span class="badge-ent">ENTRENADOR</span>
+  </div>
+
+  <div class="content">
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total clientes</div><div class="stat-value" id="stTotal">0</div><span class="stat-pill pill-gold">asignados</span></div>
+      <div class="stat-card"><div class="stat-label">Asistieron hoy</div><div class="stat-value" id="stHoy">0</div><span class="stat-pill pill-green">hoy</span></div>
+      <div class="stat-card"><div class="stat-label">Esta semana</div><div class="stat-value" id="stSemana">0</div><span class="stat-pill pill-blue">semana</span></div>
+      <div class="stat-card"><div class="stat-label">Con rutina activa</div><div class="stat-value" id="stConRutina">0</div><span class="stat-pill pill-gold">asignada</span></div>
+      <div class="stat-card"><div class="stat-label">Sin asistencia</div><div class="stat-value" id="stSinAsist">0</div><span class="stat-pill pill-gray">esta semana</span></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Buscar cliente..." oninput="renderClientes()">
+      </div>
+      <select class="filter-select" id="filtroNivel" onchange="renderClientes()">
+        <option value="">Todos los niveles</option>
+        <option value="Principiante">Principiante</option>
+        <option value="Intermedio">Intermedio</option>
+        <option value="Avanzado">Avanzado</option>
+      </select>
+      <select class="filter-select" id="filtroAsist" onchange="renderClientes()">
+        <option value="">Todos</option>
+        <option value="hoy">Asistieron hoy</option>
+        <option value="semana">Esta semana</option>
+        <option value="sin">Sin asistencia esta semana</option>
+      </select>
+    </div>
+
+    <div class="clientes-grid" id="clientesGrid">
+      <div class="empty-state"><div class="icon">⏳</div><p>Cargando clientes...</p></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL DETALLE CLIENTE -->
+<div class="modal-overlay hidden" id="modalDetalle">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">PERFIL DEL CLIENTE</div>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn-cerrar" onclick="cerrarModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API='http://localhost:8080/api';
+let sesion={};
+try{
+  sesion=JSON.parse(localStorage.getItem('usuario')||'{}');
+  if(!sesion?.rol)window.location.href='/login.html';
+  if(sesion.rol!=='ENTRENADOR')window.location.href='/login.html';
+}catch{window.location.href='/login.html';}
+document.getElementById('sidebarNombre').textContent=`${sesion.nombre||''} ${sesion.apellido||''}`;
+document.getElementById('sidebarEmail').textContent=sesion.email||'';
+document.getElementById('sidebarAvatar').textContent=((sesion.nombre||'E')[0]+(sesion.apellido||'')[0]).toUpperCase();
+function cerrarSesion(){localStorage.removeItem('usuario');window.location.href='/login.html';}
+
+let misClientes=[],asistencias=[],rutinas=[],asignaciones=[];
+const entId=sesion.entrenadorId;
+
+const avatarP=[{bg:'rgba(247,183,49,0.2)',fg:'#f7b731'},{bg:'rgba(16,185,129,0.2)',fg:'#34d399'},{bg:'rgba(59,130,246,0.2)',fg:'#93c5fd'},{bg:'rgba(239,68,68,0.2)',fg:'#fca5a5'},{bg:'rgba(139,92,246,0.2)',fg:'#c4b5fd'}];
+function avatarStyle(id){const c=avatarP[(id||0)%avatarP.length];return `background:${c.bg};color:${c.fg}`;}
+function iniciales(n,a){return((n||'')[0]||'').toUpperCase()+((a||'')[0]||'').toUpperCase();}
+function fmtFecha(d){if(!d)return'—';return new Date(d).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'});}
+function fmtHora(d){if(!d)return'—';return new Date(d).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});}
+
+const hoy=new Date();hoy.setHours(0,0,0,0);
+function esHoy(d){if(!d)return false;const f=new Date(d);f.setHours(0,0,0,0);return f.getTime()===hoy.getTime();}
+function esSemana(d){if(!d)return false;const f=new Date(d);const h=new Date();h.setDate(h.getDate()-7);return f>=h;}
+
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+function abrirModal(){document.getElementById('modalDetalle').classList.remove('hidden');}
+function cerrarModal(){document.getElementById('modalDetalle').classList.add('hidden');}
+document.getElementById('modalDetalle').addEventListener('click',e=>{if(e.target===document.getElementById('modalDetalle'))cerrarModal();});
+
+async function cargarTodo(){
+  try{
+    const[resU,resR,resA,resAs]=await Promise.all([
+      fetch(`${API}/usuarios`),fetch(`${API}/rutinas`),
+      fetch(`${API}/rutinas/asignaciones`),fetch(`${API}/asistencia`)
+    ]);
+    const usuarios=resU.ok?await resU.json():demoUsuarios();
+    rutinas=resR.ok?await resR.json():demoRutinas();
+    asignaciones=resA.ok?await resA.json():demoAsignaciones();
+    asistencias=resAs.ok?await resAs.json():demoAsistencias();
+
+    // Mis rutinas
+    const misRutIds=new Set(rutinas.filter(r=>r.entrenadorId==entId).map(r=>r.id));
+    // Mis clientes = los que tienen una de mis rutinas
+    const misCliIds=new Set(asignaciones.filter(a=>misRutIds.has(a.rutinaId)).map(a=>a.clienteId));
+    misClientes=usuarios.filter(u=>u.rol==='CLIENTE'&&misCliIds.has(u.id));
+    if(!misClientes.length)misClientes=demoClientes();
+  }catch{
+    rutinas=demoRutinas();asignaciones=demoAsignaciones();
+    asistencias=demoAsistencias();misClientes=demoClientes();
+  }
+  actualizarStats();
+  renderClientes();
+}
+
+function actualizarStats(){
+  const hoyCount=misClientes.filter(c=>asistencias.some(a=>a.clienteId===c.id&&esHoy(a.fechaEntrada))).length;
+  const semCount=misClientes.filter(c=>asistencias.some(a=>a.clienteId===c.id&&esSemana(a.fechaEntrada))).length;
+  const conRutina=misClientes.filter(c=>asignaciones.some(a=>a.clienteId===c.id)).length;
+  const sinAsist=misClientes.filter(c=>!asistencias.some(a=>a.clienteId===c.id&&esSemana(a.fechaEntrada))).length;
+  document.getElementById('stTotal').textContent=misClientes.length;
+  document.getElementById('stHoy').textContent=hoyCount;
+  document.getElementById('stSemana').textContent=semCount;
+  document.getElementById('stConRutina').textContent=conRutina;
+  document.getElementById('stSinAsist').textContent=sinAsist;
+}
+
+function getClienteData(c){
+  const asig=asignaciones.find(a=>a.clienteId===c.id);
+  const rutina=asig?rutinas.find(r=>r.id===asig.rutinaId):null;
+  const asistC=asistencias.filter(a=>a.clienteId===c.id).sort((a,b)=>new Date(b.fechaEntrada)-new Date(a.fechaEntrada));
+  const asisHoy=asistC.some(a=>esHoy(a.fechaEntrada));
+  const asisSem=asistC.filter(a=>esSemana(a.fechaEntrada)).length;
+  const ultima=asistC[0]?.fechaEntrada||null;
+  return{asig,rutina,asistC,asisHoy,asisSem,ultima};
+}
+
+function renderMiniBar(c){
+  const dias=7;
+  const bars=[];
+  for(let i=dias-1;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);d.setHours(0,0,0,0);
+    const tiene=asistencias.some(a=>{
+      if(a.clienteId!==c.id)return false;
+      const f=new Date(a.fechaEntrada);f.setHours(0,0,0,0);
+      return f.getTime()===d.getTime();
+    });
+    const esH=i===0;
+    const h=tiene?Math.floor(Math.random()*20)+16:4;
+    bars.push(`<div class="asist-bar${tiene?' tiene':''}${esH?' hoy':''}" style="height:${h}px" title="${d.toLocaleDateString('es-CO',{weekday:'short',day:'numeric'})}"></div>`);
+  }
+  return bars.join('');
+}
+
+function filtrar(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const niv=document.getElementById('filtroNivel').value;
+  const asistF=document.getElementById('filtroAsist').value;
+  return misClientes.filter(c=>{
+    const txt=`${c.nombre} ${c.apellido} ${c.email||''}`.toLowerCase();
+    const{rutina,asisHoy,asisSem}=getClienteData(c);
+    const matchQ=!q||txt.includes(q);
+    const matchNiv=!niv||rutina?.nivel===niv;
+    const matchA=!asistF||(asistF==='hoy'&&asisHoy)||(asistF==='semana'&&asisSem>0)||(asistF==='sin'&&asisSem===0);
+    return matchQ&&matchNiv&&matchA;
+  });
+}
+
+function renderClientes(){
+  const data=filtrar();
+  const grid=document.getElementById('clientesGrid');
+  if(!data.length){
+    grid.innerHTML=`<div class="empty-state"><div class="icon">👥</div><p>No se encontraron clientes</p></div>`;
+    return;
+  }
+  grid.innerHTML=data.map(c=>{
+    const{rutina,asisHoy,asisSem,ultima}=getClienteData(c);
+    return`<div class="cliente-card">
+      <div class="cliente-header">
+        <div class="avatar" style="${avatarStyle(c.id)}">${iniciales(c.nombre,c.apellido)}</div>
+        <div class="cliente-info-h">
+          <div class="cliente-nombre">${c.nombre} ${c.apellido}</div>
+          <div class="cliente-email">${c.email||'—'}</div>
+        </div>
+        <span class="estado-pill ${asisHoy?'est-activo':'est-inactivo'}">
+          <span class="dot"></span>${asisHoy?'Asistió hoy':'Sin visita hoy'}
+        </span>
+      </div>
+      <div class="cliente-body">
+        <div class="info-row">
+          <span class="info-key">Rutina asignada</span>
+          <span class="info-val">${rutina?rutina.nombre:'Sin rutina'}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Nivel</span>
+          ${rutina?`<span class="nivel-badge nivel-${rutina.nivel}">${rutina.nivel}</span>`:'<span class="info-val" style="color:var(--muted)">—</span>'}
+        </div>
+        <div class="info-row">
+          <span class="info-key">Asistencias semana</span>
+          <span class="info-val" style="color:var(--gold);font-family:'Bebas Neue';font-size:20px">${asisSem}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Última visita</span>
+          <span class="info-val">${ultima?fmtFecha(ultima):'Nunca'}</span>
+        </div>
+        <div class="asist-mini">
+          <div class="asist-mini-title">Asistencia últimos 7 días</div>
+          <div class="asist-mini-bars">${renderMiniBar(c)}</div>
+        </div>
+      </div>
+      <div class="cliente-footer">
+        <button class="btn-card gold" onclick="verDetalle(${c.id})">👁 Ver detalle</button>
+        <button class="btn-card" onclick="verAsistencia(${c.id})">📋 Asistencia</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function verDetalle(id){
+  const c=misClientes.find(x=>x.id===id);if(!c)return;
+  const{rutina,asistC,asisHoy,asisSem,ultima}=getClienteData(c);
+  const histReciente=asistC.slice(0,8);
+  document.getElementById('modalBody').innerHTML=`
+    <div style="text-align:center">
+      <div class="detalle-avatar" style="${avatarStyle(c.id)}">${iniciales(c.nombre,c.apellido)}</div>
+      <div class="detalle-nombre">${c.nombre} ${c.apellido}</div>
+      <div class="detalle-email">${c.email||'—'}</div>
+      <span class="estado-pill ${asisHoy?'est-activo':'est-inactivo'}" style="margin:0 auto 1rem">
+        <span class="dot"></span>${asisHoy?'Asistió hoy':'Sin visita hoy'}
+      </span>
+    </div>
+    <div class="detalle-row"><span class="detalle-key">Rutina asignada</span><span style="font-weight:500">${rutina?rutina.nombre:'Sin rutina'}</span></div>
+    <div class="detalle-row"><span class="detalle-key">Nivel</span>${rutina?`<span class="nivel-badge nivel-${rutina.nivel}">${rutina.nivel}</span>`:'<span>—</span>'}</div>
+    <div class="detalle-row"><span class="detalle-key">Ejercicios en rutina</span><span style="font-weight:500">${(rutina?.ejercicios||[]).length}</span></div>
+    <div class="detalle-row"><span class="detalle-key">Asistencias esta semana</span><span style="font-family:'Bebas Neue';font-size:22px;color:var(--gold)">${asisSem}</span></div>
+    <div class="detalle-row"><span class="detalle-key">Total asistencias</span><span style="font-family:'Bebas Neue';font-size:22px;color:var(--gold)">${asistC.length}</span></div>
+    <div class="detalle-row"><span class="detalle-key">Última visita</span><span style="font-weight:500">${ultima?fmtFecha(ultima):'Nunca'}</span></div>
+    <div style="margin-top:1rem">
+      <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Últimas visitas</div>
+      <div class="asist-historial">
+        ${histReciente.length?histReciente.map(a=>`
+          <div class="asist-hist-item">
+            <span class="asist-hist-fecha">${fmtFecha(a.fechaEntrada)}</span>
+            <span class="asist-hist-hora">Entrada: ${fmtHora(a.fechaEntrada)}${a.fechaSalida?' · Salida: '+fmtHora(a.fechaSalida):' · En curso'}</span>
+          </div>`).join('')
+        :'<div style="text-align:center;padding:1rem;color:var(--muted);font-size:13px">Sin registros de asistencia</div>'}
+      </div>
+    </div>`;
+  abrirModal();
+}
+
+function verAsistencia(id){
+  window.location.href='/asistencia.html';
+}
+
+cargarTodo();
+</script>
+</body>
+</html>
